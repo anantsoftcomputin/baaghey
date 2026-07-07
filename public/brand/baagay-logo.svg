@@ -1,0 +1,15 @@
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="1200" fill="#000000"/>
+  <circle cx="600" cy="600" r="600" fill="#4E6A31"/>
+  <g transform="translate(188 414)">
+    <path d="M64 56C80 40 96 24 112 8C120 0 132 0 140 8L196 64C204 72 204 84 196 92L140 148C132 156 120 156 112 148L56 92C48 84 48 72 56 64L64 56Z" fill="#F4898B"/>
+    <circle cx="126" cy="78" r="20" fill="#4E6A31"/>
+    <path d="M793 182C809 166 825 150 841 134C849 126 861 126 869 134L925 190C933 198 933 210 925 218L869 274C861 282 849 282 841 274L785 218C777 210 777 198 785 190L793 182Z" fill="#F4898B"/>
+    <circle cx="855" cy="204" r="20" fill="#4E6A31"/>
+    <path d="M493 340C509 324 525 308 541 292C549 284 561 284 569 292L625 348C633 356 633 368 625 376L569 432C561 440 549 440 541 432L485 376C477 368 477 356 485 348L493 340Z" fill="#F4898B"/>
+    <circle cx="555" cy="362" r="20" fill="#4E6A31"/>
+    <text x="135" y="292" fill="#FEEC6D" font-family="Arial Black, Arial, sans-serif" font-size="230" font-weight="900" letter-spacing="-18">બાગેય</text>
+    <path d="M438 0H494L575 86L528 86L438 0Z" fill="#FEEC6D"/>
+    <rect x="148" y="86" width="632" height="36" fill="#FEEC6D"/>
+  </g>
+</svg>
