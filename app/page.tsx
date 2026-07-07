@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Mail,
@@ -23,9 +23,11 @@ import {
   subscribeCategories,
   subscribeProducts,
 } from "@/lib/firebase";
-import { campaigns, categories, products, stories, type Campaign, type Category, type Product } from "@/lib/products";
+import { bandhaniSteps, campaigns, categories, products, stories, type Campaign, type Category, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
+import { ValuesStrip } from "@/components/ValuesStrip";
+import { MotifField, StitchDivider } from "@/components/Motifs";
 
 type AuthMode = "email" | "google" | "phone";
 type AuthForm = {
@@ -39,6 +41,7 @@ type AuthForm = {
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
+  const splashDoneRef = useRef(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("email");
   const [status, setStatus] = useState("");
@@ -57,9 +60,10 @@ export default function Home() {
     note: "",
   });
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setShowSplash(false), 3000);
-    return () => window.clearTimeout(timer);
+  const finishSplash = useCallback(() => {
+    if (splashDoneRef.current) return;
+    splashDoneRef.current = true;
+    setShowSplash(false);
   }, []);
 
   useEffect(() => {
@@ -163,8 +167,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fffdf1] text-ink">
-      {showSplash && <Splash />}
+    <main className="min-h-screen text-ink">
+      {showSplash && <Splash onFinish={finishSplash} />}
 
       <StoreHeader count={activeProducts.length} />
 
@@ -176,13 +180,8 @@ export default function Home() {
           priority
           className="object-cover opacity-72"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78),rgba(78,106,49,0.58),rgba(0,0,0,0.08))]" />
-        <div className="absolute bottom-0 left-0 right-0 grid grid-cols-4">
-          <span className="h-3 bg-neem" />
-          <span className="h-3 bg-gulal" />
-          <span className="h-3 bg-kesar" />
-          <span className="h-3 bg-ink" />
-        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(32,45,26,0.72),rgba(78,106,49,0.34)_52%,rgba(78,106,49,0.05))]" />
+        <StitchDivider tone="text-kesar" className="absolute bottom-0 left-0 right-0 z-10" />
         <div className="relative mx-auto grid min-h-[calc(100svh-7rem)] max-w-[1500px] items-center px-4 py-16 sm:px-6 lg:grid-cols-[0.95fr_0.75fr] lg:px-10">
           <div className="max-w-4xl">
             <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={116} height={116} className="mb-8 size-24 rounded-full shadow-textile sm:size-28" />
@@ -214,8 +213,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="collections" className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 lg:px-10">
-        <div className="glass-card grid md:grid-cols-4">
+      <ValuesStrip />
+
+      <StitchDivider tone="text-neem/40" className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-10" />
+
+      <section id="collections" className="relative mx-auto max-w-[1500px] px-4 py-14 sm:px-6 lg:px-10">
+        <MotifField variant="a" tone="text-neem" />
+        <div className="glass-card relative grid md:grid-cols-4">
           {catalogCategories.map((category) => (
             <Link key={category.id} href={`/shop?category=${category.id}`} className="group min-h-44 border-b border-white/35 p-5 md:border-b-0 md:border-r">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-neem">Category</p>
@@ -234,7 +238,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="shop" className="heritage-bg relative px-4 py-20 sm:px-6 lg:px-10">
+      <section id="shop" className="relative px-4 py-20 sm:px-6 lg:px-10">
+        <MotifField variant="b" tone="text-neem" />
         <div className="jali-arch -right-24 top-20 hidden lg:block" />
         <div className="relative z-10 mx-auto max-w-[1500px]">
         <div className="mb-10 flex flex-col justify-between gap-5 border-b border-black/10 pb-6 md:flex-row md:items-end">
@@ -264,36 +269,74 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="craft" className="bg-neem py-20 text-[#fffdf1]">
-        <div className="mx-auto grid max-w-[1500px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.2fr] lg:px-10">
+      <section id="craft" className="relative overflow-hidden bg-[#f6efdd]/70 py-20 text-mehendi">
+        <MotifField variant="c" tone="text-neem" />
+        <div className="relative mx-auto grid max-w-[1500px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.2fr] lg:px-10">
           <div>
             <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={92} height={92} className="mb-8 size-20 rounded-full" />
-            <p className="text-xs font-black uppercase tracking-[0.26em] text-kesar">Print nathi, Bandhej che</p>
-            <h2 className="mt-3 font-display text-6xl font-bold leading-none tracking-normal">A commerce site with a craft spine.</h2>
-            <p className="mt-6 text-base leading-8 text-white/75">
-              Inspired by the category clarity of Tribes India and the heritage editorial pace of The Jodhpore, BAAGAY keeps product discovery clean while letting Gujarat show up in color, craft, and rhythm.
+            <p className="text-xs font-black uppercase tracking-[0.26em] text-sindoor">Print nathi, Bandhej che</p>
+            <h2 className="mt-3 font-display text-6xl font-bold leading-none tracking-normal text-mehendi">Five thousand years, tied by hand.</h2>
+            <p className="mt-6 text-base leading-8 text-mehendi/75">
+              Bandhani is one of the oldest resist-dye crafts on earth, practised across Kutch and Saurashtra for centuries. Every dot you see was pinched and knotted by an artisan before the cloth was ever dyed — which is why the pattern breathes, and why no two of our pieces are truly identical.
+            </p>
+            <p className="mt-4 text-base leading-8 text-mehendi/75">
+              We cut that living craft into shirts, overshirts and dresses you can actually wear out — heritage kept honest, worn easy.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {stories.map((story) => (
-              <article key={story.city} className="glass-card bg-black/12 p-5 text-[#fffdf1]">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-kesar">{story.city}</p>
-                <h3 className="mt-8 font-display text-3xl font-bold">{story.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-white/70">{story.copy}</p>
+              <article key={story.city} className="rounded-[20px] border border-mehendi/12 bg-white/70 p-5 shadow-[0_10px_40px_rgba(34,56,35,0.06)] backdrop-blur-sm">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-sindoor">{story.city}</p>
+                <h3 className="mt-8 font-display text-3xl font-bold text-mehendi">{story.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-mehendi/70">{story.copy}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="journal" className="mx-auto grid max-w-[1500px] gap-5 px-4 py-20 sm:px-6 lg:grid-cols-3 lg:px-10">
-        <EditorialCard title="The Kamal shirt" copy="A relaxed shape, small tied dots, and a color story that moves from craft to street." tone="bg-gulal" />
-        <EditorialCard title="Bandhej in black" copy="The palette brings black into the system so heritage has a sharper modern anchor." tone="bg-ink text-[#fffdf1]" />
-        <EditorialCard title="Festive sale tools" copy="Run Navratri, Diwali, or wedding-season edits from the admin campaign manager." tone="bg-kesar" />
+      <section id="craft-process" className="relative mx-auto max-w-[1500px] px-4 py-20 sm:px-6 lg:px-10">
+        <MotifField variant="a" tone="text-neem" />
+        <div className="relative mb-12 flex flex-col justify-between gap-5 border-b border-black/10 pb-6 md:flex-row md:items-end">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.26em] text-gulal">How Bandhani is made</p>
+            <h2 className="mt-2 font-display text-6xl font-bold tracking-normal">Tie. Dye. Reveal.</h2>
+          </div>
+          <p className="max-w-xl text-sm leading-7 text-black/62">
+            The word <em>bandhani</em> comes from <em>bandhan</em> — to tie. Here is the same four-step ritual our artisans follow, from a plain length of cloth to a field of hand-tied dots.
+          </p>
+        </div>
+        <div className="relative grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {bandhaniSteps.map((step, index) => (
+            <article key={step.step} className="glass-card flex flex-col rounded-[22px] p-6">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-5xl font-bold text-neem/40">{step.step}</span>
+                <StepIcon index={index} />
+              </div>
+              <p className="mt-6 font-display text-3xl font-bold leading-none text-neem">{step.gujarati}</p>
+              <h3 className="mt-2 text-sm font-black uppercase tracking-[0.18em] text-ink">{step.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-black/62">{step.copy}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="mx-auto max-w-[1500px] px-4 pb-20 sm:px-6 lg:px-10">
-        <div className="glass-card grid gap-8 p-6 md:grid-cols-[0.8fr_1.2fr] md:p-10">
+      <section id="journal" className="relative mx-auto max-w-[1500px] px-4 pb-20 sm:px-6 lg:px-10">
+        <MotifField variant="b" tone="text-neem" />
+        <div className="relative mb-10 border-b border-black/10 pb-6">
+          <p className="text-xs font-black uppercase tracking-[0.26em] text-sindoor">BAAGAY journal</p>
+          <h2 className="mt-2 font-display text-6xl font-bold tracking-normal text-mehendi">Notes from the knot.</h2>
+        </div>
+        <div className="relative grid gap-5 lg:grid-cols-3">
+          <EditorialCard title="The Kamal shirt" copy="A relaxed camp collar, lotus-vine ties, and a madder red that moves easily from a garba night to a Sunday lunch." accent="gulal" />
+          <EditorialCard title="Bandhej in black" copy="Raat brings black into a festive craft — the same hand-tied dots, lit with gold, for a sharper modern evening." accent="ink" />
+          <EditorialCard title="From coast to city" copy="Kutch dyes, Saurashtra sun, and shapes cut for denim and daylight. Heritage you can wear on an ordinary Tuesday." accent="kesar" />
+        </div>
+      </section>
+
+      <section className="relative mx-auto max-w-[1500px] px-4 pb-20 sm:px-6 lg:px-10">
+        <MotifField variant="c" tone="text-neem" />
+        <div className="glass-card relative grid gap-8 p-6 md:grid-cols-[0.8fr_1.2fr] md:p-10">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.26em] text-gulal">Private preview</p>
             <h2 className="mt-3 font-display text-6xl font-bold leading-none tracking-normal">Reserve a hand-tied piece.</h2>
@@ -353,31 +396,100 @@ export default function Home() {
   );
 }
 
-function EditorialCard({ title, copy, tone }: { title: string; copy: string; tone: string }) {
+const EDITORIAL_ACCENTS: Record<string, { bar: string; kicker: string }> = {
+  gulal: { bar: "bg-gulal", kicker: "text-gulal" },
+  ink: { bar: "bg-ink", kicker: "text-ink" },
+  kesar: { bar: "bg-brass", kicker: "text-brass" },
+};
+
+function EditorialCard({ title, copy, accent }: { title: string; copy: string; accent: string }) {
+  const a = EDITORIAL_ACCENTS[accent] ?? EDITORIAL_ACCENTS.gulal;
   return (
-    <article className={`${tone} min-h-80 p-6`}>
-      <p className="text-xs font-black uppercase tracking-[0.24em] opacity-70">BAAGAY journal</p>
-      <h3 className="mt-20 font-display text-5xl font-bold leading-none tracking-normal">{title}</h3>
-      <p className="mt-4 max-w-sm text-sm leading-7 opacity-70">{copy}</p>
+    <article className="flex min-h-72 flex-col rounded-[20px] border border-mehendi/12 bg-white/70 p-6 shadow-[0_10px_40px_rgba(34,56,35,0.06)] backdrop-blur-sm">
+      <span className={`h-1.5 w-12 rounded-full ${a.bar}`} />
+      <p className={`mt-5 text-xs font-black uppercase tracking-[0.24em] ${a.kicker}`}>Journal</p>
+      <h3 className="mt-auto pt-10 font-display text-4xl font-bold leading-none tracking-normal text-mehendi">{title}</h3>
+      <p className="mt-4 max-w-sm text-sm leading-7 text-mehendi/70">{copy}</p>
     </article>
   );
 }
 
-function Splash() {
+// Small hand-drawn craft marks for the tie -> dye -> reveal steps.
+function StepIcon({ index }: { index: number }) {
+  const common = {
+    width: 40,
+    height: 40,
+    viewBox: "0 0 40 40",
+    fill: "none",
+    stroke: "#4E6A31",
+    strokeWidth: 1.6,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+  if (index === 0) {
+    // Bind — a pinched point cinched with thread
+    return (
+      <svg {...common}>
+        <path d="M20 5 C13 12 13 20 20 24 C27 20 27 12 20 5 Z" />
+        <path d="M14 24 h12 M13 28 h14 M15 32 h10" />
+        <circle cx="20" cy="14" r="2.4" fill="#F4898B" stroke="none" />
+      </svg>
+    );
+  }
+  if (index === 1) {
+    // Dye — a droplet meeting the vat
+    return (
+      <svg {...common}>
+        <path d="M20 5 C25 13 29 17 29 23 a9 9 0 0 1 -18 0 C11 17 15 13 20 5 Z" fill="rgba(159,48,44,0.14)" />
+        <path d="M14 22 q6 4 12 0" />
+      </svg>
+    );
+  }
+  if (index === 2) {
+    // Dry — coastal sun
+    return (
+      <svg {...common}>
+        <circle cx="20" cy="20" r="6.5" fill="rgba(247,219,84,0.35)" />
+        <path d="M20 4 v4 M20 32 v4 M4 20 h4 M32 20 h4 M8.5 8.5 l2.8 2.8 M28.7 28.7 l2.8 2.8 M31.5 8.5 l-2.8 2.8 M11.3 28.7 l-2.8 2.8" />
+      </svg>
+    );
+  }
+  // Reveal — the knot opened into a bloomed dot
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-neem text-kesar">
-      <div className="absolute inset-0 splash-weave opacity-55" />
-      <div className="relative grid place-items-center">
-        <svg className="h-[260px] w-[320px] sm:h-[360px] sm:w-[520px]" viewBox="0 0 520 360" aria-hidden="true">
-          <path className="stitch-path" d="M42 210 C120 70 205 286 272 142 C340 -2 436 162 478 84" fill="none" stroke="#FEEC6D" strokeWidth="7" strokeLinecap="round" strokeDasharray="12 18" />
-          <path className="thread-path" d="M42 210 C120 70 205 286 272 142 C340 -2 436 162 478 84" fill="none" stroke="#F4898B" strokeWidth="2" />
-          <g className="needle">
-            <path d="M0 -32 L8 28 L0 42 L-8 28 Z" fill="#fffdf1" />
-            <circle cx="0" cy="-18" r="4" fill="#000000" />
-          </g>
-        </svg>
-        <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={176} height={176} className="absolute size-36 rounded-full shadow-textile sm:size-44" />
-      </div>
+    <svg {...common}>
+      <circle cx="20" cy="20" r="12" />
+      <circle cx="20" cy="20" r="6.5" />
+      <circle cx="20" cy="20" r="2.4" fill="#9f302c" stroke="none" />
+    </svg>
+  );
+}
+
+function Splash({ onFinish }: { onFinish: () => void }) {
+  useEffect(() => {
+    const fallback = window.setTimeout(onFinish, 10800);
+    return () => window.clearTimeout(fallback);
+  }, [onFinish]);
+
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-ink">
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src="/create_a_logo_reveal_with_bhan.mp4"
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onEnded={onFinish}
+      />
+      <div className="absolute inset-0 bg-black/10" />
+      <Image
+        src="/brand/baagay-logo.svg"
+        alt="BAAGAY logo"
+        width={160}
+        height={160}
+        className="splash-video-fallback relative size-32 rounded-full sm:size-40"
+      />
     </div>
   );
 }

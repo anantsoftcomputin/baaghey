@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Filter, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
+import { MotifField } from "@/components/Motifs";
 import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
 import { categories as seedCategories, products as seedProducts, type Category, type Product } from "@/lib/products";
 
@@ -65,10 +66,11 @@ export default function ShopPage() {
   }, [activeProducts, category, material, maxPrice, query, size, sort, stockOnly]);
 
   return (
-    <main className="heritage-bg min-h-screen text-ink">
+    <main className="min-h-screen text-ink">
       <StoreHeader count={activeProducts.length} />
 
       <section className="relative px-4 pt-36 sm:px-6 lg:px-10">
+        <MotifField variant="b" tone="text-neem" />
         <div className="jali-arch -right-24 top-28 hidden lg:block" />
         <div className="jali-arch -left-32 top-72 hidden rotate-[-8deg] lg:block" />
         <div className="relative z-10 mx-auto grid max-w-[1500px] gap-8 pb-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">

@@ -20,8 +20,15 @@ export function formatPrice(price: number) {
   return `₹${price.toLocaleString("en-IN")}`;
 }
 
+export function productPhoto(product: Product) {
+  return product.photo || product.imageDataUrl;
+}
+
+export function hasPhoto(product: Product) {
+  return Boolean(productPhoto(product));
+}
+
 export function productImageStyle(product: Product) {
-  return product.imageDataUrl
-    ? { backgroundImage: `url(${product.imageDataUrl})` }
-    : { background: product.image };
+  const photo = productPhoto(product);
+  return photo ? { backgroundImage: `url(${photo})` } : { background: product.image };
 }

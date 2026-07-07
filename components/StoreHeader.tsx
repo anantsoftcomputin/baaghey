@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useState } from "react";
+import { StitchDivider } from "@/components/Motifs";
 
 export function StoreHeader({ count = 0 }: { count?: number }) {
   const [open, setOpen] = useState(false);
@@ -15,7 +16,7 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-black/10 bg-[#fffdf1]/92 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-40 bg-[#fffdf1]/92 backdrop-blur-xl">
       <div className="flex h-9 items-center justify-center bg-ink px-4 text-center text-[11px] font-extrabold uppercase tracking-[0.18em] text-kesar">
         Print nathi, Bandhej che · hand-tied in Gujarat
       </div>
@@ -47,6 +48,7 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
           </button>
         </div>
       </div>
+      <StitchDivider tone="text-neem/50" />
       {open && (
         <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setOpen(false)}>
           <nav className="ml-auto flex h-full w-80 flex-col gap-6 bg-[#fffdf1] p-6 text-sm font-black uppercase tracking-[0.2em]" onClick={(event) => event.stopPropagation()}>

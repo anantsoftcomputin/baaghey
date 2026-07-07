@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "catalog": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "productImages": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "registrations": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "wishlistLeads": {
+      ".read": "auth != null",
+      ".write": true
+    },
+    ".read": false,
+    ".write": false
+  }
+}

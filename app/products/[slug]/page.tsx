@@ -7,7 +7,8 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Facebook, MessageCircle, Send, Share2 } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
-import { formatPrice, productHref, productImageStyle, productSlug } from "@/lib/catalog";
+import { MotifField } from "@/components/Motifs";
+import { formatPrice, hasPhoto, productHref, productImageStyle, productSlug } from "@/lib/catalog";
 import { firebaseReady, subscribeProducts } from "@/lib/firebase";
 import { products as seedProducts, type Product } from "@/lib/products";
 
@@ -34,7 +35,7 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-[#fffdf1] text-ink">
+      <main className="min-h-screen text-ink">
         <StoreHeader />
         <section className="mx-auto max-w-[900px] px-4 pt-40 sm:px-6 lg:px-10">
           <h1 className="font-display text-6xl font-bold">Product not found.</h1>
@@ -53,16 +54,17 @@ export default function ProductPage() {
     .slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-[#fffdf1] text-ink">
+    <main className="relative min-h-screen overflow-hidden text-ink">
       <StoreHeader count={products.filter((item) => item.status === "active").length} />
+      <MotifField variant="c" tone="text-neem" />
 
-      <section className="mx-auto grid max-w-[1500px] gap-8 px-4 pb-16 pt-36 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
+      <section className="relative mx-auto grid max-w-[1500px] gap-8 px-4 pb-16 pt-36 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
         <div>
           <Link href="/shop" className="mb-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-black/60">
             <ArrowLeft size={15} /> Back to shop
           </Link>
-          <div className="glass-card sticky top-32 aspect-[4/5] bg-cover bg-center" style={productImageStyle(product)}>
-            {!product.imageDataUrl && <div className="absolute inset-0 bandhani-dots opacity-65" />}
+          <div className="glass-card sticky top-32 aspect-[4/5] bg-cover bg-[center_30%]" style={productImageStyle(product)}>
+            {!hasPhoto(product) && <div className="bandhani-weave absolute inset-0" />}
           </div>
         </div>
 
@@ -125,7 +127,7 @@ export default function ProductPage() {
       </section>
 
       {related.length > 0 && (
-        <section className="mx-auto max-w-[1500px] px-4 pb-20 sm:px-6 lg:px-10">
+        <section className="relative mx-auto max-w-[1500px] px-4 pb-20 sm:px-6 lg:px-10">
           <div className="mb-6 border-b border-black/10 pb-4">
             <p className="text-xs font-black uppercase tracking-[0.26em] text-gulal">More from this collection</p>
             <h2 className="mt-2 font-display text-5xl font-bold">You may also like</h2>

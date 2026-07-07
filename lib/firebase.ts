@@ -141,6 +141,22 @@ function valuesFromSnapshot<T>(value: unknown): T[] {
   }));
 }
 
+function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => stripUndefined(item)).filter((item) => item !== undefined) as T;
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([, item]) => item !== undefined)
+        .map(([key, item]) => [key, stripUndefined(item)]),
+    ) as T;
+  }
+
+  return value;
+}
+
 export function subscribeProducts(callback: (items: Product[]) => void) {
   if (!database) return () => undefined;
   return onValue(ref(database, "catalog/products"), (snapshot) => {
@@ -165,7 +181,7 @@ export function subscribeCampaigns(callback: (items: Campaign[]) => void) {
 export async function upsertProduct(product: Product) {
   if (!database) throw new Error("Firebase is not configured.");
   await set(ref(database, `catalog/products/${product.id}`), {
-    ...product,
+    ...stripUndefined(product),
     updatedAt: serverTimestamp(),
   });
 }
@@ -173,7 +189,7 @@ export async function upsertProduct(product: Product) {
 export async function patchProduct(productId: string, data: Partial<Product>) {
   if (!database) throw new Error("Firebase is not configured.");
   await update(ref(database, `catalog/products/${productId}`), {
-    ...data,
+    ...stripUndefined(data),
     updatedAt: serverTimestamp(),
   });
 }

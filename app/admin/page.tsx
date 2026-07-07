@@ -162,61 +162,81 @@ export default function AdminPage() {
   }
 
   async function saveProduct() {
-    const id = productForm.id || slugify(productForm.name);
-    if (!id || !productForm.name) {
-      setNotice("Add a product name before saving.");
-      return;
+    try {
+      const id = productForm.id || slugify(productForm.name);
+      if (!id || !productForm.name) {
+        setNotice("Add a product name before saving.");
+        return;
+      }
+      await upsertProduct({
+        ...productForm,
+        id,
+        sku: productForm.sku || `BAG-${id.toUpperCase().slice(0, 14)}`,
+        tags: cleanList(productForm.tags),
+        sizes: cleanList(productForm.sizes),
+        price: Number(productForm.price),
+        ...(productForm.salePrice ? { salePrice: Number(productForm.salePrice) } : {}),
+        ...(productForm.description ? { description: productForm.description } : {}),
+        ...(productForm.details ? { details: productForm.details } : {}),
+        ...(productForm.care ? { care: productForm.care } : {}),
+        ...(productForm.imageDataUrl ? { imageDataUrl: productForm.imageDataUrl } : {}),
+        inventory: Number(productForm.inventory),
+        lowStockAt: Number(productForm.lowStockAt),
+      });
+      setProductForm(emptyProduct);
+      setNotice("Product saved to Firebase.");
+    } catch (error) {
+      setNotice(error instanceof Error ? `Product save failed: ${error.message}` : "Product save failed.");
     }
-    await upsertProduct({
-      ...productForm,
-      id,
-      sku: productForm.sku || `BAG-${id.toUpperCase().slice(0, 14)}`,
-      tags: cleanList(productForm.tags),
-      sizes: cleanList(productForm.sizes),
-      price: Number(productForm.price),
-      salePrice: productForm.salePrice ? Number(productForm.salePrice) : undefined,
-      inventory: Number(productForm.inventory),
-      lowStockAt: Number(productForm.lowStockAt),
-    });
-    setProductForm(emptyProduct);
-    setNotice("Product saved to Firebase.");
   }
 
   async function saveCategory() {
-    const id = categoryForm.id || slugify(categoryForm.name);
-    if (!id || !categoryForm.name) {
-      setNotice("Add a category name before saving.");
-      return;
+    try {
+      const id = categoryForm.id || slugify(categoryForm.name);
+      if (!id || !categoryForm.name) {
+        setNotice("Add a category name before saving.");
+        return;
+      }
+      await upsertCategory({ ...categoryForm, id, sortOrder: Number(categoryForm.sortOrder) });
+      setCategoryForm(emptyCategory);
+      setNotice("Category saved.");
+    } catch (error) {
+      setNotice(error instanceof Error ? `Category save failed: ${error.message}` : "Category save failed.");
     }
-    await upsertCategory({ ...categoryForm, id, sortOrder: Number(categoryForm.sortOrder) });
-    setCategoryForm(emptyCategory);
-    setNotice("Category saved.");
   }
 
   async function saveCampaign() {
-    const id = campaignForm.id || slugify(campaignForm.name || campaignForm.code);
-    if (!id || !campaignForm.name || !campaignForm.code) {
-      setNotice("Add a campaign name and code before saving.");
-      return;
+    try {
+      const id = campaignForm.id || slugify(campaignForm.name || campaignForm.code);
+      if (!id || !campaignForm.name || !campaignForm.code) {
+        setNotice("Add a campaign name and code before saving.");
+        return;
+      }
+      await upsertCampaign({
+        ...campaignForm,
+        id,
+        code: campaignForm.code.toUpperCase(),
+        discountPercent: Number(campaignForm.discountPercent),
+        appliesTo: cleanList(campaignForm.appliesTo),
+      });
+      setCampaignForm(emptyCampaign);
+      setNotice("Campaign saved.");
+    } catch (error) {
+      setNotice(error instanceof Error ? `Campaign save failed: ${error.message}` : "Campaign save failed.");
     }
-    await upsertCampaign({
-      ...campaignForm,
-      id,
-      code: campaignForm.code.toUpperCase(),
-      discountPercent: Number(campaignForm.discountPercent),
-      appliesTo: cleanList(campaignForm.appliesTo),
-    });
-    setCampaignForm(emptyCampaign);
-    setNotice("Campaign saved.");
   }
 
   async function seedCatalog() {
-    await Promise.all([
-      ...seedCategories.map((category) => upsertCategory(category)),
-      ...seedProducts.map((product) => upsertProduct(product)),
-      ...seedCampaigns.map((campaign) => upsertCampaign(campaign)),
-    ]);
-    setNotice("Seed catalog pushed to Firebase.");
+    try {
+      await Promise.all([
+        ...seedCategories.map((category) => upsertCategory(category)),
+        ...seedProducts.map((product) => upsertProduct(product)),
+        ...seedCampaigns.map((campaign) => upsertCampaign(campaign)),
+      ]);
+      setNotice("Seed catalog pushed to Firebase.");
+    } catch (error) {
+      setNotice(error instanceof Error ? `Seed failed: ${error.message}` : "Seed failed.");
+    }
   }
 
   async function handleImage(file: File | undefined) {
@@ -358,8 +378,12 @@ export default function AdminPage() {
               onStatus={setStatusFilter}
               onEdit={setProductForm}
               onDelete={async (id) => {
-                await deleteProduct(id);
-                setNotice("Product deleted.");
+                try {
+                  await deleteProduct(id);
+                  setNotice("Product deleted.");
+                } catch (error) {
+                  setNotice(error instanceof Error ? `Product delete failed: ${error.message}` : "Product delete failed.");
+                }
               }}
             />
           </section>
@@ -443,8 +467,12 @@ export default function AdminPage() {
                 meta: `${category.sortOrder} · ${category.featured ? "Homepage" : "Hidden"}`,
                 onEdit: () => setCategoryForm(category),
                 onDelete: async () => {
-                  await deleteCategory(category.id);
-                  setNotice("Category deleted.");
+                  try {
+                    await deleteCategory(category.id);
+                    setNotice("Category deleted.");
+                  } catch (error) {
+                    setNotice(error instanceof Error ? `Category delete failed: ${error.message}` : "Category delete failed.");
+                  }
                 },
               }))}
             />
@@ -492,8 +520,12 @@ export default function AdminPage() {
                 meta: `${campaign.code} · ${campaign.discountPercent}% · ${campaign.active ? "Live" : "Paused"}`,
                 onEdit: () => setCampaignForm(campaign),
                 onDelete: async () => {
-                  await deleteCampaign(campaign.id);
-                  setNotice("Campaign deleted.");
+                  try {
+                    await deleteCampaign(campaign.id);
+                    setNotice("Campaign deleted.");
+                  } catch (error) {
+                    setNotice(error instanceof Error ? `Campaign delete failed: ${error.message}` : "Campaign delete failed.");
+                  }
                 },
               }))}
             />
