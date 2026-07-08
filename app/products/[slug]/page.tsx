@@ -7,7 +7,8 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Facebook, MessageCircle, Send, Share2 } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
-import { MotifField } from "@/components/Motifs";
+import { BottomNav } from "@/components/BottomNav";
+import { MotifField, StitchDivider } from "@/components/Motifs";
 import { formatPrice, hasPhoto, productHref, productImageStyle, productSlug } from "@/lib/catalog";
 import { firebaseReady, subscribeProducts } from "@/lib/firebase";
 import { products as seedProducts, type Product } from "@/lib/products";
@@ -35,7 +36,7 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <main className="min-h-screen text-ink">
+      <main className="min-h-screen pb-24 text-ink lg:pb-0">
         <StoreHeader />
         <section className="mx-auto max-w-[900px] px-4 pt-40 sm:px-6 lg:px-10">
           <h1 className="font-display text-6xl font-bold">Product not found.</h1>
@@ -43,6 +44,7 @@ export default function ProductPage() {
             Back to shop
           </Link>
         </section>
+        <BottomNav />
       </main>
     );
   }
@@ -54,16 +56,19 @@ export default function ProductPage() {
     .slice(0, 3);
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-ink">
+    <main className="relative min-h-screen overflow-hidden pb-24 text-ink lg:pb-0">
       <StoreHeader count={products.filter((item) => item.status === "active").length} />
       <MotifField variant="c" tone="text-neem" />
 
       <section className="relative mx-auto grid max-w-[1500px] gap-8 px-4 pb-16 pt-36 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
-        <div>
+        <div className="lg:sticky lg:top-32 lg:self-start">
           <Link href="/shop" className="mb-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-black/60">
             <ArrowLeft size={15} /> Back to shop
           </Link>
-          <div className="glass-card sticky top-32 aspect-[4/5] bg-cover bg-[center_30%]" style={productImageStyle(product)}>
+          <div
+            className="glass-card aspect-[4/5]"
+            style={{ ...productImageStyle(product), backgroundSize: "cover", backgroundPosition: "center" }}
+          >
             {!hasPhoto(product) && <div className="bandhani-weave absolute inset-0" />}
           </div>
         </div>
@@ -98,7 +103,7 @@ export default function ProductPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="mt-6 hidden gap-3 sm:grid-cols-2 lg:grid">
             <button className="h-12 rounded-full bg-kesar text-sm font-black uppercase tracking-[0.16em] text-ink">Add to cart</button>
             <button className="h-12 rounded-full bg-ink text-sm font-black uppercase tracking-[0.16em] text-kesar">Buy now</button>
           </div>
@@ -139,6 +144,28 @@ export default function ProductPage() {
           </div>
         </section>
       )}
+
+      {/* Native-app style sticky purchase bar, mobile only */}
+      <div className="fixed inset-x-0 bottom-0 z-40 bg-[#fffdf1]/97 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <StitchDivider tone="text-neem/45" />
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="shrink-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-black/45">Price</p>
+            <p className="font-black leading-tight">
+              {product.salePrice ? (
+                <>
+                  {formatPrice(product.salePrice)}
+                  <span className="ml-1.5 text-xs text-black/35 line-through">{formatPrice(product.price)}</span>
+                </>
+              ) : (
+                formatPrice(product.price)
+              )}
+            </p>
+          </div>
+          <button className="h-12 flex-1 rounded-full bg-kesar text-xs font-black uppercase tracking-[0.14em] text-ink">Add to cart</button>
+          <button className="h-12 flex-1 rounded-full bg-ink text-xs font-black uppercase tracking-[0.14em] text-kesar">Buy now</button>
+        </div>
+      </div>
     </main>
   );
 }

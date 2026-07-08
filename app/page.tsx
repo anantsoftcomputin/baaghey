@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Mail,
@@ -26,8 +26,11 @@ import {
 import { bandhaniSteps, campaigns, categories, products, stories, type Campaign, type Category, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
+import { BottomNav } from "@/components/BottomNav";
 import { ValuesStrip } from "@/components/ValuesStrip";
 import { MotifField, StitchDivider } from "@/components/Motifs";
+
+const SPLASH_SESSION_KEY = "baagay-splash-shown";
 
 type AuthMode = "email" | "google" | "phone";
 type AuthForm = {
@@ -40,7 +43,7 @@ type AuthForm = {
 };
 
 export default function Home() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const splashDoneRef = useRef(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("email");
@@ -63,7 +66,30 @@ export default function Home() {
   const finishSplash = useCallback(() => {
     if (splashDoneRef.current) return;
     splashDoneRef.current = true;
+    try {
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+    } catch {
+      // sessionStorage unavailable (e.g. private mode) — splash just replays, no big deal
+    }
     setShowSplash(false);
+  }, []);
+
+  // Splash is a first-visit-of-the-session moment, not something to replay every
+  // time someone lands back on "/". Defaults to hidden (matches the server
+  // render) and only turns on once we confirm, client-side, that this session
+  // hasn't seen it yet — so repeat visits never even flash it.
+  useLayoutEffect(() => {
+    let alreadySeen = false;
+    try {
+      alreadySeen = Boolean(window.sessionStorage.getItem(SPLASH_SESSION_KEY));
+    } catch {
+      alreadySeen = false;
+    }
+    if (alreadySeen) {
+      splashDoneRef.current = true;
+    } else {
+      setShowSplash(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -184,7 +210,6 @@ export default function Home() {
         <StitchDivider tone="text-kesar" className="absolute bottom-0 left-0 right-0 z-10" />
         <div className="relative mx-auto grid min-h-[calc(100svh-7rem)] max-w-[1500px] items-center px-4 py-16 sm:px-6 lg:grid-cols-[0.95fr_0.75fr] lg:px-10">
           <div className="max-w-4xl">
-            <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={116} height={116} className="mb-8 size-24 rounded-full shadow-textile sm:size-28" />
             <p className="mb-5 inline-flex rounded-full bg-kesar px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-ink">
               Modern Bandhani · Gujarat
             </p>
@@ -258,11 +283,14 @@ export default function Home() {
                 <h3 className="mt-3 font-display text-5xl font-bold tracking-normal">{category.name}</h3>
                 <p className="mt-4 text-sm leading-7 text-black/62">{category.description}</p>
               </div>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 xl:grid-cols-3">
                 {category.products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <div key={product.id} className="w-[78vw] shrink-0 snap-start sm:w-auto sm:shrink sm:snap-align-none">
+                    <ProductCard product={product} />
+                  </div>
                 ))}
               </div>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-black/35 sm:hidden">Swipe for more →</p>
             </section>
           ))}
         </div>
@@ -357,7 +385,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-ink px-4 py-12 text-[#fffdf1] sm:px-6 lg:px-10">
+      <footer className="bg-ink px-4 py-12 pb-24 text-[#fffdf1] sm:px-6 lg:px-10 lg:pb-12">
         <div className="mx-auto grid max-w-[1500px] gap-10 md:grid-cols-[1fr_2fr_1fr]">
           <div>
             <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={94} height={94} className="size-20 rounded-full" />
@@ -376,6 +404,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <BottomNav count={activeProducts.length} />
 
       {authOpen && (
         <AuthDrawer

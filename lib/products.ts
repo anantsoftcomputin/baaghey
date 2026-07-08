@@ -334,6 +334,47 @@ export type BandhaniStep = {
   copy: string;
 };
 
+export type BandhaniTechnique = {
+  id: string;
+  term: string;
+  title: string;
+  copy: string;
+  exampleIds: string[];
+};
+
+// The named tying patterns that actually show up across the catalog copy —
+// used to give the collections page a real craft glossary instead of filler.
+export const bandhaniTechniques: BandhaniTechnique[] = [
+  {
+    id: "ekdali",
+    term: "Ekdali",
+    title: "The single tie",
+    copy: "One pinch, one knot, one dot. The simplest Bandhej, scattered loosely across the cloth for a clean, everyday pattern.",
+    exampleIds: ["kesari-bandhani-shirt", "gulaal-bandhani-sundress"],
+  },
+  {
+    id: "chaubundi",
+    term: "Chaubundi",
+    title: "The four-point cluster",
+    copy: "Four ties pinched together into a tiny square knot, so the dye leaves behind a small constellation instead of a single point.",
+    exampleIds: ["raat-bandhani-dress"],
+  },
+  {
+    id: "bel-buti",
+    term: "Bel-Buti",
+    title: "The flowing vine",
+    copy: "A trail of ties knotted in a running vine, so the resist pattern curls and branches like a creeper across the fabric.",
+    exampleIds: ["teal-bandhani-full-sleeve-shirt", "kamal-bandhani-shirt", "neel-drop-waist-dress"],
+  },
+  {
+    id: "diamond-field",
+    term: "Diamond Field",
+    title: "The even field",
+    copy: "An all-over grid of tied diamonds, worked point by point until the whole cloth carries a steady, quiet rhythm.",
+    exampleIds: ["firozi-crop-overshirt", "kantha-bandhej-overshirt"],
+  },
+];
+
 // The tie -> dye -> reveal story, told the way the craft actually happens.
 export const bandhaniSteps: BandhaniStep[] = [
   {

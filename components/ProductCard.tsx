@@ -8,7 +8,7 @@ import { formatPrice, productHref } from "@/lib/catalog";
 
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="glass-card group rounded-[24px] transition duration-300 hover:-translate-y-1">
+    <article className="bandhani-card group transition duration-300 hover:-translate-y-1">
       <Link
         href={productHref(product)}
         className="relative m-3 block aspect-[4/5] overflow-hidden rounded-[20px] bg-mehendi/10"
@@ -45,18 +45,19 @@ export function ProductCard({ product }: { product: Product }) {
           View product <ArrowRight size={17} />
         </span>
       </Link>
-      <div className="m-3 mt-0 rounded-[20px] border border-white/35 bg-white/25 p-5 pt-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
-        <div className="flex items-center justify-between gap-3">
+      <div className="relative m-3 mt-0 overflow-hidden rounded-[20px] border border-brass/25 bg-[#fffdf1] p-5 pt-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <div className="bandhani-card-texture pointer-events-none absolute inset-0 opacity-[0.16]" />
+        <div className="relative flex items-center justify-between gap-3">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-neem">{product.material}</p>
-          <button aria-label="Add to wishlist" className="grid size-9 place-items-center rounded-full border border-white/45 bg-white/35 text-gulal backdrop-blur-xl">
+          <button aria-label="Add to wishlist" className="grid size-9 place-items-center rounded-full border border-brass/30 bg-white/70 text-gulal">
             <Heart size={16} />
           </button>
         </div>
-        <Link href={productHref(product)}>
+        <Link href={productHref(product)} className="relative block">
           <h3 className="mt-3 font-display text-3xl font-bold tracking-normal">{product.name}</h3>
         </Link>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-black/60">{product.craft}</p>
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="relative mt-2 line-clamp-2 text-sm leading-6 text-black/60">{product.craft}</p>
+        <div className="relative mt-4 flex items-center justify-between gap-3">
           <p className="font-black">
             {product.salePrice ? (
               <>

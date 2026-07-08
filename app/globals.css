@@ -193,6 +193,42 @@ button:disabled {
   mix-blend-mode: screen;
 }
 
+/*
+  Makes a product card read as a tied-and-dyed cloth swatch rather than a
+  generic panel: a warm fabric shadow and a brass thread-frame just inside
+  the edge, like a hem stitch.
+*/
+.bandhani-card {
+  position: relative;
+  border-radius: 26px;
+  background: #fffdf1;
+  box-shadow:
+    0 20px 45px rgba(120, 72, 30, 0.16),
+    0 0 0 1px rgba(185, 136, 61, 0.4);
+}
+
+.bandhani-card::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 20px;
+  border: 1.5px dashed rgba(185, 136, 61, 0.55);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bandhani-card-texture {
+  background-image:
+    radial-gradient(circle, rgba(185, 136, 61, 0.5) 0 1.4px, transparent 2.2px),
+    radial-gradient(circle, rgba(159, 48, 44, 0.32) 0 1px, transparent 1.8px);
+  background-position:
+    0 0,
+    17px 21px;
+  background-size:
+    34px 34px,
+    34px 34px;
+}
+
 .splash-weave {
   background-image:
     radial-gradient(circle at 20% 24%, rgba(247, 219, 84, 0.22) 0 2px, transparent 3px),
