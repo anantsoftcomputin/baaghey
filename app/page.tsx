@@ -24,6 +24,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { ValuesStrip } from "@/components/ValuesStrip";
+import { ArtBand } from "@/components/ArtBand";
 
 type AuthMode = "email" | "google" | "phone";
 type AuthForm = {
@@ -186,6 +187,8 @@ export default function Home() {
 
       <ValuesStrip />
 
+      <ArtBand />
+
       {/* Category grid with video support */}
       <section id="collections" className="container-max px-4 py-14 sm:px-6 lg:px-10">
         <div className="mb-8 flex items-end justify-between gap-4">
@@ -224,23 +227,35 @@ export default function Home() {
       )}
 
       {/* Craft story */}
-      <section id="craft" className="border-t border-line px-4 py-16 sm:px-6 lg:px-10">
-        <div className="container-max grid gap-10 lg:grid-cols-[0.9fr_1.2fr]">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Print nathi, Bandhej che</p>
-            <h2 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">Five thousand years, tied by hand.</h2>
-            <p className="mt-6 text-base leading-7 text-mute">
-              Bandhani is one of the oldest resist-dye crafts on earth, practised across Kutch and Saurashtra for centuries. Every dot you see was pinched and knotted by an artisan before the cloth was ever dyed — which is why the pattern breathes, and why no two of our pieces are truly identical.
-            </p>
-            <p className="mt-4 text-base leading-7 text-mute">
-              We cut that living craft into shirts, overshirts and dresses you can actually wear out — heritage kept honest, worn easy.
-            </p>
+      <section id="craft" className="border-t border-line bg-cream/60 px-4 py-16 sm:px-6 lg:px-10">
+        <div className="container-max">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-dark">Print nathi, Bandhej che</p>
+              <h2 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">Five thousand years, tied by hand.</h2>
+              <p className="mt-6 text-base leading-7 text-mute">
+                Bandhani is one of the oldest resist-dye crafts on earth, practised across Kutch and Saurashtra for centuries. Every dot you see was pinched and knotted by an artisan before the cloth was ever dyed — which is why the pattern breathes, and why no two of our pieces are truly identical.
+              </p>
+              <p className="mt-4 text-base leading-7 text-mute">
+                We cut that living craft into shirts, overshirts and dresses you can actually wear out — heritage kept honest, worn easy.
+              </p>
+              <p className="mt-6 text-sm font-bold uppercase tracking-[0.12em] text-green-dark">Tied with Tradition. Crafted with Love.</p>
+            </div>
+            <figure className="border-8 border-white shadow-[0_16px_50px_rgba(47,93,51,0.18)]">
+              <Image
+                src="/brand/baagay-artwork.jpg"
+                alt="Hand-painted BAAGAY artwork — pink blooms and tied bandhani dots on a deep green field"
+                width={1900}
+                height={1240}
+                className="h-auto w-full"
+              />
+            </figure>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {stories.map((story, index) => {
               const bar = [ "bg-green", "bg-pink", "bg-yellow" ][index % 3];
               return (
-                <article key={story.city} className="border border-line p-5">
+                <article key={story.city} className="border border-line bg-white p-5">
                   <span className={`block h-1 w-10 ${bar}`} />
                   <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-mute">{story.city}</p>
                   <h3 className="mt-3 text-xl font-bold leading-snug">{story.title}</h3>
@@ -293,44 +308,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Reserve form */}
+      {/* Reserve form — framed like the BAAGAY thank-you card: artwork border, cream panel */}
       <section className="container-max px-4 pb-16 sm:px-6 lg:px-10">
-        <div className="grid gap-8 border border-line p-6 md:grid-cols-[0.8fr_1.2fr] md:p-10">
+        <div className="relative overflow-hidden">
+          <div aria-hidden className="absolute inset-0 bg-[url('/brand/baagay-artwork.jpg')] bg-cover bg-center" />
+          <div className="relative m-4 grid gap-8 bg-cream p-6 sm:m-8 md:grid-cols-[0.8fr_1.2fr] md:p-10 lg:m-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Private preview</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-dark">Private preview</p>
             <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">Reserve a hand-tied piece.</h2>
+            <p className="mt-4 text-sm leading-6 text-mute">Every dot tells a story. Every detail is a tribute to craft, culture and conscious creation.</p>
           </div>
           <div className="grid gap-3">
-            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-green" placeholder="Name" value={form.name} onChange={(event) => updateForm("name", event.target.value)} />
-            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-green" placeholder="Email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
-            <select className="h-12 border border-line px-4 text-sm outline-none focus:border-green" value={selectedProduct} onChange={(event) => setSelectedProduct(event.target.value)}>
+            <input className="h-12 border border-green/25 bg-white px-4 text-sm outline-none focus:border-green" placeholder="Name" value={form.name} onChange={(event) => updateForm("name", event.target.value)} />
+            <input className="h-12 border border-green/25 bg-white px-4 text-sm outline-none focus:border-green" placeholder="Email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
+            <select className="h-12 border border-green/25 bg-white px-4 text-sm outline-none focus:border-green" value={selectedProduct} onChange={(event) => setSelectedProduct(event.target.value)}>
               {activeProducts.map((product) => (
                 <option key={product.id}>{product.name}</option>
               ))}
             </select>
-            <textarea className="min-h-24 border border-line p-4 text-sm outline-none focus:border-green" placeholder="Sizing, occasion, or styling note" value={form.note} onChange={(event) => updateForm("note", event.target.value)} />
+            <textarea className="min-h-24 border border-green/25 bg-white p-4 text-sm outline-none focus:border-green" placeholder="Sizing, occasion, or styling note" value={form.note} onChange={(event) => updateForm("note", event.target.value)} />
             <button className="inline-flex h-12 items-center justify-center gap-2 bg-green px-5 text-sm font-bold uppercase tracking-[0.1em] text-white disabled:opacity-60" disabled={!firebaseReady} onClick={handleWishlistLead}>
               Save request <ArrowRight size={16} />
             </button>
           </div>
+          </div>
         </div>
       </section>
 
-      <footer className="border-t border-line px-4 py-12 pb-24 sm:px-6 lg:px-10 lg:pb-12">
+      <footer className="border-t border-yellow-dark/15 bg-cream px-4 py-12 pb-24 sm:px-6 lg:px-10 lg:pb-12">
         <div className="container-max grid gap-10 md:grid-cols-[1fr_2fr_1fr]">
           <div>
             <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={64} height={64} className="size-12 rounded-full" />
             <p className="mt-4 text-2xl font-bold">BAAGAY</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-green-dark">Tied with Tradition.<br />Crafted with Love.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             {sortedCategories.map((category) => (
-              <Link key={category.id} className="border border-line p-4 text-sm font-semibold hover:border-green hover:text-green-dark" href={`/shop?category=${category.id}`}>
+              <Link key={category.id} className="border border-green/20 bg-white p-4 text-sm font-semibold hover:border-green hover:text-green-dark" href={`/shop?category=${category.id}`}>
                 {category.name}
               </Link>
             ))}
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-mute">Newsletter</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-green-dark">Newsletter</p>
             <p className="mt-3 text-sm leading-6 text-mute">Festive edits, fresh drops, and craft stories from Gujarat.</p>
           </div>
         </div>

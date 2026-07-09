@@ -104,10 +104,14 @@ export default function ProductPage() {
             <button className="h-12 bg-green text-sm font-bold uppercase tracking-[0.1em] text-white">Buy now</button>
           </div>
 
-          <div className="mt-8 grid gap-5 border border-line p-5">
+          {/* Styled after the BAAGAY thank-you card: cream panel, green headings */}
+          <div className="mt-8 grid gap-5 border border-yellow-dark/20 bg-cream p-5 md:p-6">
             <Info title="Product details" copy={product.details ?? product.craft} />
-            <Info title="Fabric care" copy={product.care ?? "Hand wash separately in cold water. Dry in shade."} />
+            <Info title="Fabric care" copy={product.care ?? "Dry clean or hand wash. Machine wash not recommended."} />
             <Info title="Stock" copy={product.inventory > 0 ? `${product.inventory} pieces available. Selected size: ${selectedSize}.` : "Sold out"} />
+            <p className="border-t border-yellow-dark/20 pt-4 text-xs font-bold uppercase tracking-[0.12em] text-green-dark">
+              Tied with Tradition. Crafted with Love.
+            </p>
           </div>
 
           <div className="mt-8">
@@ -168,7 +172,7 @@ export default function ProductPage() {
 function Info({ title, copy }: { title: string; copy: string }) {
   return (
     <div>
-      <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-mute">{title}</h2>
+      <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-green-dark">{title}</h2>
       <p className="mt-2 text-sm leading-7 text-black">{copy}</p>
     </div>
   );

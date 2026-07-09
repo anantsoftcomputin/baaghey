@@ -171,6 +171,12 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
                 </Link>
               ))}
             </nav>
+            <div className="mt-auto">
+              <p className="bg-cream px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-green-dark">
+                Tied with Tradition. Crafted with Love.
+              </p>
+              <div aria-hidden className="h-24 w-full bg-[url('/brand/baagay-artwork.jpg')] bg-cover bg-center" />
+            </div>
           </aside>
         </div>
       )}

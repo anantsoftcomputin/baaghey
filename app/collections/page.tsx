@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
+import { ArtBand } from "@/components/ArtBand";
 import { categoryMedia, formatPrice, productHref } from "@/lib/catalog";
 import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
 import {
@@ -84,8 +85,10 @@ export default function CollectionsPage() {
         </p>
       </section>
 
+      <ArtBand className="h-12 sm:h-14" />
+
       {/* Category tiles with subcategories */}
-      <section className="container-max px-4 pb-16 sm:px-6 lg:px-10">
+      <section className="container-max px-4 py-12 sm:px-6 lg:px-10">
         <div className="grid gap-6 md:grid-cols-3">
           {categoryStats.map(({ category, count, minPrice, maxPrice, media, subcategoryCounts }) => (
             <article key={category.id} className="flex flex-col border border-line">

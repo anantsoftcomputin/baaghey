@@ -15,6 +15,7 @@ const config: Config = {
         mute: "#6b6b6b",
         faint: "#9c9c9c",
         accent: "#B3441E",
+        cream: "#FBF6E0",
         green: {
           light: "#E6F0DF",
           DEFAULT: "#4C8C4A",

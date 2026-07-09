@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
       {
         pathname: "/images/**",
       },
+      {
+        pathname: "/brand/**",
+      },
     ],
   },
 };
