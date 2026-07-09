@@ -8,6 +8,7 @@ import { ArrowLeft, Facebook, MessageCircle, Send, Share2 } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { formatPrice, productHref, productImageStyle, productSlug } from "@/lib/catalog";
 import { firebaseReady, subscribeProducts } from "@/lib/firebase";
 import { products as seedProducts, type Product } from "@/lib/products";
@@ -55,7 +56,7 @@ export default function ProductPage() {
     .slice(0, 3);
 
   return (
-    <main className="min-h-screen pb-24 text-black lg:pb-0">
+    <main className="min-h-screen text-black">
       <StoreHeader count={products.filter((item) => item.status === "active").length} />
 
       <section className="container-max grid gap-8 px-4 pb-16 pt-28 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
@@ -144,6 +145,8 @@ export default function ProductPage() {
           </div>
         </section>
       )}
+
+      <SiteFooter />
 
       {/* Sticky mobile buy bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">

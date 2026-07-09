@@ -25,6 +25,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { ValuesStrip } from "@/components/ValuesStrip";
 import { ArtBand } from "@/components/ArtBand";
+import { SiteFooter } from "@/components/SiteFooter";
 
 type AuthMode = "email" | "google" | "phone";
 type AuthForm = {
@@ -153,7 +154,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen pb-16 text-black lg:pb-0">
+    <main className="min-h-screen text-black">
       <StoreHeader count={activeProducts.length} />
 
       {/* Hero */}
@@ -335,26 +336,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-yellow-dark/15 bg-cream px-4 py-12 pb-24 sm:px-6 lg:px-10 lg:pb-12">
-        <div className="container-max grid gap-10 md:grid-cols-[1fr_2fr_1fr]">
-          <div>
-            <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={64} height={64} className="size-12 rounded-full" />
-            <p className="mt-4 text-2xl font-bold">BAAGAY</p>
-            <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-green-dark">Tied with Tradition.<br />Crafted with Love.</p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {sortedCategories.map((category) => (
-              <Link key={category.id} className="border border-green/20 bg-white p-4 text-sm font-semibold hover:border-green hover:text-green-dark" href={`/shop?category=${category.id}`}>
-                {category.name}
-              </Link>
-            ))}
-          </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-green-dark">Newsletter</p>
-            <p className="mt-3 text-sm leading-6 text-mute">Festive edits, fresh drops, and craft stories from Gujarat.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <BottomNav count={activeProducts.length} />
 

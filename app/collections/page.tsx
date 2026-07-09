@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { ArtBand } from "@/components/ArtBand";
+import { SiteFooter } from "@/components/SiteFooter";
 import { categoryMedia, formatPrice, productHref } from "@/lib/catalog";
 import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
 import {
@@ -75,7 +76,7 @@ export default function CollectionsPage() {
   }, [activeProducts]);
 
   return (
-    <main className="min-h-screen pb-16 text-black lg:pb-0">
+    <main className="min-h-screen text-black">
       <StoreHeader count={activeProducts.length} />
 
       <section className="container-max px-4 pb-8 pt-28 sm:px-6 lg:px-10">
@@ -199,6 +200,8 @@ export default function CollectionsPage() {
           ))}
         </div>
       </section>
+
+      <SiteFooter />
 
       <BottomNav count={activeProducts.length} />
     </main>

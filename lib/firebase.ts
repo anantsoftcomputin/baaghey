@@ -120,6 +120,14 @@ export async function saveWishlistLead(data: {
   });
 }
 
+export async function saveNewsletterSubscription(email: string) {
+  if (!database) throw new Error("Firebase is not configured.");
+  await push(ref(database, "newsletterSubscribers"), {
+    email,
+    createdAt: serverTimestamp(),
+  });
+}
+
 export async function saveImageRecord(data: {
   productId: string;
   fileName: string;

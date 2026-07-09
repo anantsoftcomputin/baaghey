@@ -5,6 +5,7 @@ import { Filter, SlidersHorizontal, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
 import { categories as seedCategories, products as seedProducts, type Category, type Product } from "@/lib/products";
 
@@ -64,7 +65,7 @@ export default function ShopPage() {
   }, [activeProducts, category, subcategory, material, maxPrice, size, sort, stockOnly]);
 
   return (
-    <main className="min-h-screen pb-16 text-black lg:pb-0">
+    <main className="min-h-screen text-black">
       <StoreHeader count={activeProducts.length} />
 
       <section className="container-max px-4 pb-6 pt-28 sm:px-6 lg:px-10">
@@ -167,6 +168,8 @@ export default function ShopPage() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
 
       <BottomNav count={activeProducts.length} />
 
