@@ -9,22 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        neem: "#4E6A31",
-        mehendi: "#24351d",
-        kesar: "#FEEC6D",
-        gulal: "#F4898B",
-        sindoor: "#9f302c",
-        indigo: "#203a63",
-        ivory: "#fff7e6",
-        brass: "#b9883d",
         ink: "#000000",
+        paper: "#ffffff",
+        line: "#e5e5e5",
+        mute: "#6b6b6b",
+        faint: "#9c9c9c",
+        accent: "#B3441E",
       },
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
-        body: ["var(--font-body)", "sans-serif"],
-      },
-      boxShadow: {
-        textile: "0 30px 90px rgba(34, 56, 35, 0.24)",
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
     },
   },

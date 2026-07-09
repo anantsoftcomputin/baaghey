@@ -12,115 +12,14 @@
 
 html {
   scroll-behavior: smooth;
+  font-stretch: 87.5%;
 }
 
 body {
   margin: 0;
-  /* Site-wide backdrop: the bandhani fabric photo, held fixed behind a soft
-     cream veil so content and the delicate motifs stay legible over it. */
-  background-image:
-    linear-gradient(rgba(255, 253, 241, 0.78), rgba(255, 253, 241, 0.78)),
-    url("/images/Background.png");
-  background-attachment: fixed, fixed;
-  background-position: center center, center center;
-  background-size: cover, cover;
-  background-repeat: no-repeat, no-repeat;
-}
-
-.heritage-bg {
-  position: relative;
-  overflow-x: clip;
-  background:
-    radial-gradient(circle at 12% 16%, rgba(244, 137, 139, 0.2) 0 150px, transparent 280px),
-    radial-gradient(circle at 88% 9%, rgba(254, 236, 109, 0.28) 0 150px, transparent 300px),
-    linear-gradient(180deg, #fffdf1 0%, #f7f0df 52%, #fffdf1 100%);
-}
-
-.heritage-bg::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle, rgba(78, 106, 49, 0.16) 0 1.5px, transparent 2.5px),
-    linear-gradient(45deg, rgba(78, 106, 49, 0.05) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(244, 137, 139, 0.045) 25%, transparent 25%);
-  background-position:
-    0 0,
-    0 0,
-    0 0;
-  background-size:
-    34px 34px,
-    42px 42px,
-    42px 42px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.18));
-}
-
-.glass-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.64);
-  border-radius: 24px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.14)),
-    rgba(255, 253, 241, 0.2);
-  box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(28px) saturate(1.45);
-  -webkit-backdrop-filter: blur(28px) saturate(1.45);
-}
-
-.glass-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.62), transparent 30%),
-    linear-gradient(300deg, rgba(255, 255, 255, 0.18), transparent 42%),
-    radial-gradient(circle at 20% 8%, rgba(254, 236, 109, 0.22), transparent 30%),
-    radial-gradient(circle at 86% 14%, rgba(244, 137, 139, 0.16), transparent 28%);
-  opacity: 0.72;
-}
-
-.glass-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-.glass-control {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 253, 241, 0.68);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.glass-border {
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: 24px;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.jali-arch {
-  position: absolute;
-  width: min(36vw, 480px);
-  aspect-ratio: 1 / 1.22;
-  border: 1px solid rgba(78, 106, 49, 0.16);
-  border-radius: 999px 999px 12px 12px;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(78, 106, 49, 0.12) 0 7px, transparent 8px),
-    radial-gradient(circle at 38% 33%, rgba(244, 137, 139, 0.12) 0 5px, transparent 6px),
-    radial-gradient(circle at 62% 33%, rgba(254, 236, 109, 0.18) 0 5px, transparent 6px);
-  background-size: 64px 64px;
-  opacity: 0.55;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 button,
@@ -129,309 +28,39 @@ input,
 textarea,
 select {
   letter-spacing: 0;
+  font-family: inherit;
 }
 
 button,
 a {
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    color 180ms ease,
-    border-color 180ms ease,
-    opacity 180ms ease;
-}
-
-button:hover,
-a:hover {
-  transform: translateY(-1px);
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
-.bandhani-dots {
-  background-image:
-    radial-gradient(circle, rgba(255, 247, 230, 0.9) 0 2px, transparent 3px),
-    radial-gradient(circle, rgba(247, 219, 84, 0.45) 0 1.5px, transparent 2.5px);
-  background-position:
-    0 0,
-    18px 18px;
-  background-size:
-    36px 36px,
-    36px 36px;
+.container-max {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/*
-  Organic hand-tied bandhani, used only as a fallback when a product has no
-  photo. Real bandhani dots are a pale resist ring with a small dyed core, and
-  they never sit on a perfect grid — so we layer several dot fields at
-  non-commensurate periods (37 / 53 / 71px) and offsets. Where the periods drift
-  in and out of phase, the composite reads as scattered and irregular, not
-  mechanical.
-*/
-.bandhani-weave {
-  background-image:
-    radial-gradient(circle at 50% 50%, rgba(255, 253, 241, 0.92) 0 1.6px, rgba(255, 253, 241, 0.28) 2.2px 3px, transparent 3.6px),
-    radial-gradient(circle at 50% 50%, rgba(255, 253, 241, 0.8) 0 1.3px, transparent 2.6px),
-    radial-gradient(circle at 50% 50%, rgba(255, 253, 241, 0.62) 0 1px, transparent 2px),
-    radial-gradient(circle at 30% 20%, rgba(0, 0, 0, 0.08), transparent 60%);
-  background-position:
-    0 0,
-    19px 26px,
-    9px 44px,
-    0 0;
-  background-size:
-    37px 37px,
-    53px 53px,
-    71px 71px,
-    100% 100%;
-  transform: rotate(-4deg) scale(1.15);
-  transform-origin: center;
-  opacity: 0.85;
-  mix-blend-mode: screen;
+.hairline {
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/*
-  Makes a product card read as a tied-and-dyed cloth swatch rather than a
-  generic panel: a warm fabric shadow and a brass thread-frame just inside
-  the edge, like a hem stitch.
-*/
-.bandhani-card {
-  position: relative;
-  border-radius: 26px;
-  background: #fffdf1;
-  box-shadow:
-    0 20px 45px rgba(120, 72, 30, 0.16),
-    0 0 0 1px rgba(185, 136, 61, 0.4);
-}
-
-.bandhani-card::before {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 20px;
-  border: 1.5px dashed rgba(185, 136, 61, 0.55);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.bandhani-card-texture {
-  background-image:
-    radial-gradient(circle, rgba(185, 136, 61, 0.5) 0 1.4px, transparent 2.2px),
-    radial-gradient(circle, rgba(159, 48, 44, 0.32) 0 1px, transparent 1.8px);
-  background-position:
-    0 0,
-    17px 21px;
-  background-size:
-    34px 34px,
-    34px 34px;
-}
-
-.splash-weave {
-  background-image:
-    radial-gradient(circle at 20% 24%, rgba(247, 219, 84, 0.22) 0 2px, transparent 3px),
-    radial-gradient(circle at 72% 70%, rgba(240, 113, 120, 0.26) 0 2px, transparent 3px),
-    linear-gradient(45deg, rgba(255, 247, 230, 0.04) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(255, 247, 230, 0.04) 25%, transparent 25%);
-  background-size:
-    42px 42px,
-    48px 48px,
-    28px 28px,
-    28px 28px;
-  animation: weave-drift 10s linear infinite;
-}
-
-.stitch-path {
-  animation: stitch-reveal 2.6s ease-in-out forwards;
-  stroke-dasharray: 1 24;
-  stroke-dashoffset: 520;
-}
-
-.thread-path {
-  animation: thread-reveal 2.6s ease-in-out forwards;
-  stroke-dasharray: 620;
-  stroke-dashoffset: 620;
-}
-
-.needle {
-  offset-path: path("M42 210 C120 70 205 286 272 142 C340 -2 436 162 478 84");
-  offset-rotate: auto 92deg;
-  animation: needle-run 2.6s ease-in-out forwards;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.saree-splash {
-  perspective: 1400px;
-}
-
-.saree-stage {
-  transform-style: preserve-3d;
-}
-
-.saree-panel {
-  --delay: calc(var(--i) * 160ms);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: min(88vw, 980px);
-  height: clamp(92px, 18vh, 190px);
-  overflow: hidden;
-  border-radius: 999px;
-  box-shadow:
-    0 34px 90px rgba(0, 0, 0, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -18px 36px rgba(0, 0, 0, 0.16);
-  transform: translate(-50%, -50%) translateX(-130vw) rotate(calc(-18deg + var(--i) * 9deg)) translateY(calc((var(--i) - 2) * 34px));
-  animation: saree-sweep 3s cubic-bezier(0.75, 0, 0.22, 1) forwards;
-  animation-delay: var(--delay);
-}
-
-.saree-panel::before,
-.saree-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
-
-.saree-panel::before {
-  background:
-    radial-gradient(circle, rgba(255, 253, 241, 0.88) 0 2px, transparent 3px),
-    radial-gradient(circle, rgba(254, 236, 109, 0.45) 0 1.5px, transparent 2.5px),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  background-position:
-    0 0,
-    20px 20px,
-    0 0;
-  background-size:
-    40px 40px,
-    40px 40px,
-    180px 100%;
-  animation: saree-dots 1.8s linear infinite;
-  opacity: 0.86;
-}
-
-.saree-panel::after {
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 22%, rgba(0, 0, 0, 0.14) 52%, transparent 78%, rgba(255, 255, 255, 0.14)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px);
-  mix-blend-mode: overlay;
-}
-
-.saree-border {
-  position: absolute;
-  inset: 8px;
-  border: 2px solid rgba(254, 236, 109, 0.58);
-  border-radius: inherit;
-  z-index: 1;
-}
-
-.saree-teal {
-  background: linear-gradient(135deg, #007b78, #004a4d);
-}
-
-.saree-coral {
-  background: linear-gradient(135deg, #f4898b, #af3632);
-}
-
-.saree-kesar {
-  background: linear-gradient(135deg, #feec6d, #d9a932);
-}
-
-.saree-black {
-  background: linear-gradient(135deg, #000000, #333333);
-}
-
-.saree-green {
-  background: linear-gradient(135deg, #4e6a31, #263d20);
-}
-
-.splash-logo-wrap {
-  opacity: 0;
-  transform: scale(0.72) rotate(-5deg);
-  animation: logo-reveal 1.15s cubic-bezier(0.2, 1, 0.2, 1) 1.75s forwards;
-}
-
-.splash-logo {
-  box-shadow:
-    0 30px 90px rgba(0, 0, 0, 0.42),
-    0 0 0 10px rgba(255, 253, 241, 0.08),
-    0 0 0 1px rgba(254, 236, 109, 0.28);
-}
-
-.splash-logo-halo {
-  position: absolute;
-  width: 260px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, rgba(254, 236, 109, 0.3), transparent 58%),
-    radial-gradient(circle, rgba(244, 137, 139, 0.22), transparent 68%);
-  filter: blur(10px);
-  animation: halo-pulse 1.8s ease-in-out 1.7s infinite;
-}
-
-.splash-logo-copy {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: splash-copy 0.8s ease 2.25s forwards;
-}
-
-.splash-video-fallback {
-  opacity: 0.18;
-  filter: drop-shadow(0 28px 70px rgba(0, 0, 0, 0.48));
-  animation: video-fallback-fade 1.6s ease forwards;
-}
-
-.heritage-panel {
-  background:
-    linear-gradient(135deg, rgba(247, 219, 84, 0.22), transparent 30%),
-    linear-gradient(315deg, rgba(240, 113, 120, 0.18), transparent 35%),
-    #ffffff;
-}
-
-.motif-cell {
-  position: relative;
-  min-height: 54px;
-  background:
-    radial-gradient(circle at 50% 50%, #f7db54 0 4px, transparent 5px),
-    linear-gradient(135deg, rgba(72, 106, 49, 0.16), rgba(32, 58, 99, 0.1));
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.motif-cell:nth-child(3n) {
-  background:
-    radial-gradient(circle at 50% 50%, #fff7e6 0 4px, transparent 5px),
-    linear-gradient(135deg, #a83228, #f07178);
-}
-
-.motif-cell:nth-child(4n) {
-  background:
-    radial-gradient(circle at 50% 50%, #a83228 0 4px, transparent 5px),
-    linear-gradient(135deg, #f7db54, #b9883d);
-}
-
-.auth-button {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #223823;
-  color: #fff7e6;
-  padding: 0 18px;
-  font-size: 13px;
-  font-weight: 800;
+.tag-sale {
+  color: #B3441E;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-}
-
-.auth-button.secondary {
-  background: #ffffff;
-  border: 1px solid rgba(34, 56, 35, 0.16);
-  color: #223823;
+  letter-spacing: 0.08em;
 }
 
 .admin-button {
@@ -440,35 +69,34 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #223823;
-  color: #fff7e6;
+  background: #000000;
+  color: #ffffff;
   padding: 0 16px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 
 .admin-button.secondary {
   background: #ffffff;
-  border: 1px solid rgba(34, 56, 35, 0.16);
-  color: #223823;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  color: #000000;
 }
 
 .admin-input {
   min-height: 44px;
   width: 100%;
-  border: 1px solid rgba(34, 56, 35, 0.16);
-  background: #fff7e6;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: #ffffff;
   padding: 10px 12px;
-  color: #223823;
+  color: #000000;
   font-size: 14px;
   outline: none;
 }
 
 .admin-input:focus {
-  border-color: rgba(168, 50, 40, 0.55);
-  box-shadow: 0 0 0 3px rgba(247, 219, 84, 0.28);
+  border-color: #000000;
 }
 
 .admin-table {
@@ -479,18 +107,18 @@ button:disabled {
 }
 
 .admin-table th {
-  background: #fff7e6;
-  color: rgba(34, 56, 35, 0.62);
+  background: #fafafa;
+  color: rgba(0, 0, 0, 0.5);
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-align: left;
   text-transform: uppercase;
 }
 
 .admin-table th,
 .admin-table td {
-  border-bottom: 1px solid rgba(34, 56, 35, 0.1);
-  padding: 13px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px;
   vertical-align: middle;
 }
 
@@ -500,143 +128,15 @@ button:disabled {
   min-width: 34px;
   min-height: 34px;
   place-items: center;
-  border: 1px solid rgba(34, 56, 35, 0.14);
-  background: #fff7e6;
-  color: #223823;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  color: #000000;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .icon-button.danger {
-  color: #a83228;
-}
-
-@keyframes stitch-reveal {
-  0% {
-    opacity: 0.2;
-    stroke-dashoffset: 520;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes thread-reveal {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes needle-run {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  8% {
-    opacity: 1;
-  }
-  92% {
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-
-@keyframes weave-drift {
-  to {
-    background-position:
-      42px 42px,
-      -48px 48px,
-      28px 28px,
-      -28px 28px;
-  }
-}
-
-@keyframes saree-sweep {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) translateX(-130vw) rotate(calc(-18deg + var(--i) * 9deg)) translateY(calc((var(--i) - 2) * 34px)) rotateY(0deg);
-  }
-  18% {
-    opacity: 1;
-  }
-  43% {
-    transform: translate(-50%, -50%) translateX(0) rotate(calc(-18deg + var(--i) * 9deg)) translateY(calc((var(--i) - 2) * 34px)) rotateY(0deg);
-  }
-  66% {
-    transform: translate(-50%, -50%) translateX(0) rotate(calc(-18deg + var(--i) * 9deg)) translateY(calc((var(--i) - 2) * 34px)) rotateY(0deg) scaleX(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) translateX(120vw) rotate(calc(-7deg + var(--i) * 6deg)) translateY(calc((var(--i) - 2) * -22px)) rotateY(64deg) scaleX(0.72);
-  }
-}
-
-@keyframes saree-dots {
-  to {
-    background-position:
-      40px 40px,
-      -20px 20px,
-      180px 0;
-  }
-}
-
-@keyframes logo-reveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.72) rotate(-5deg);
-    filter: blur(8px);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.04) rotate(1deg);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-    filter: blur(0);
-  }
-}
-
-@keyframes halo-pulse {
-  50% {
-    transform: scale(1.12);
-    opacity: 0.78;
-  }
-}
-
-@keyframes splash-copy {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes video-fallback-fade {
-  0% {
-    opacity: 0.2;
-    transform: scale(0.96);
-  }
-  65% {
-    opacity: 0.1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.06);
-  }
-}
-
-@media (max-width: 640px) {
-  .motif-cell {
-    min-height: 40px;
-  }
+  color: #B3441E;
 }
 
 @media (prefers-reduced-motion: reduce) {

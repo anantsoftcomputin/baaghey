@@ -1,4 +1,4 @@
-import type { Product } from "./products";
+import type { Category, Product } from "./products";
 
 export function slugify(value: string) {
   return value
@@ -31,4 +31,12 @@ export function hasPhoto(product: Product) {
 export function productImageStyle(product: Product) {
   const photo = productPhoto(product);
   return photo ? { backgroundImage: `url(${photo})` } : { background: product.image };
+}
+
+/** Prefers an admin-uploaded category video; falls back to an explicit cover
+ * photo, then the given product's photo (typically the category's featured item). */
+export function categoryMedia(category: Category, fallbackPhoto?: string) {
+  if (category.videoUrl) return { type: "video" as const, src: category.videoUrl };
+  const photo = category.coverPhoto ?? fallbackPhoto;
+  return photo ? { type: "photo" as const, src: photo } : null;
 }

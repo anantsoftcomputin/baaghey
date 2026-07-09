@@ -4,6 +4,7 @@ export type Product = {
   id: string;
   name: string;
   category: string;
+  subcategory?: string;
   material: string;
   price: number;
   salePrice?: number;
@@ -24,12 +25,21 @@ export type Product = {
   care?: string;
 };
 
+export type Subcategory = {
+  id: string;
+  name: string;
+  sortOrder: number;
+};
+
 export type Category = {
   id: string;
   name: string;
   description: string;
   sortOrder: number;
   featured: boolean;
+  subcategories?: Subcategory[];
+  videoUrl?: string;
+  coverPhoto?: string;
 };
 
 export type Campaign = {
@@ -46,17 +56,29 @@ export type Campaign = {
 export const categories: Category[] = [
   {
     id: "shirts",
-    name: "Bandhani Shirts",
+    name: "Shirts",
     description: "Collared, boxy, and easy shirts led by hand-tied Bandhej.",
     sortOrder: 1,
     featured: true,
+    videoUrl: "/shirt-animation.mp4",
+    subcategories: [
+      { id: "full-sleeve", name: "Full Sleeve", sortOrder: 1 },
+      { id: "half-sleeve", name: "Half Sleeve", sortOrder: 2 },
+      { id: "camp-collar", name: "Camp Collar", sortOrder: 3 },
+    ],
   },
   {
     id: "dresses",
-    name: "Shirt Dresses",
+    name: "Dresses",
     description: "One-piece silhouettes with the movement of Bandhani.",
     sortOrder: 2,
     featured: true,
+    videoUrl: "/saree-animation.mp4",
+    subcategories: [
+      { id: "maxi", name: "Maxi", sortOrder: 1 },
+      { id: "midi", name: "Midi", sortOrder: 2 },
+      { id: "sundress", name: "Sundress", sortOrder: 3 },
+    ],
   },
   {
     id: "overshirts",
@@ -64,6 +86,10 @@ export const categories: Category[] = [
     description: "Layering pieces with Kantha details and soft structure.",
     sortOrder: 3,
     featured: true,
+    subcategories: [
+      { id: "boxy", name: "Boxy", sortOrder: 1 },
+      { id: "cropped", name: "Cropped", sortOrder: 2 },
+    ],
   },
 ];
 
@@ -72,6 +98,7 @@ export const products: Product[] = [
     id: "teal-bandhani-full-sleeve-shirt",
     name: "Teal Bandhani Full-Sleeve Shirt",
     category: "shirts",
+    subcategory: "full-sleeve",
     material: "Hand-dyed cotton",
     price: 2999,
     color: "Peacock teal",
@@ -97,6 +124,7 @@ export const products: Product[] = [
     id: "kamal-bandhani-shirt",
     name: "Kamal Bandhani Shirt",
     category: "shirts",
+    subcategory: "camp-collar",
     material: "Mulmul cotton",
     price: 4800,
     salePrice: 4200,
@@ -123,6 +151,7 @@ export const products: Product[] = [
     id: "kesari-bandhani-shirt",
     name: "Kesari Bandhani Shirt",
     category: "shirts",
+    subcategory: "half-sleeve",
     material: "Handloom cotton",
     price: 3600,
     color: "Kesar yellow",
@@ -148,6 +177,7 @@ export const products: Product[] = [
     id: "firozi-crop-overshirt",
     name: "Firozi Crop Overshirt",
     category: "overshirts",
+    subcategory: "cropped",
     material: "Cotton silk",
     price: 4200,
     color: "Firozi turquoise",
@@ -173,6 +203,7 @@ export const products: Product[] = [
     id: "sugandha-shirt-dress",
     name: "Sugandha Shirt Dress",
     category: "dresses",
+    subcategory: "maxi",
     material: "Cotton silk",
     price: 7500,
     color: "Kesar yellow",
@@ -198,6 +229,7 @@ export const products: Product[] = [
     id: "raat-bandhani-dress",
     name: "Raat Bandhani Dress",
     category: "dresses",
+    subcategory: "maxi",
     material: "Modal satin",
     price: 6900,
     color: "Midnight black",
@@ -223,6 +255,7 @@ export const products: Product[] = [
     id: "gulaal-bandhani-sundress",
     name: "Gulaal Bandhani Sundress",
     category: "dresses",
+    subcategory: "sundress",
     material: "Handloom cotton",
     price: 4300,
     color: "Rose gulaal",
@@ -248,6 +281,7 @@ export const products: Product[] = [
     id: "neel-drop-waist-dress",
     name: "Neel Drop-Waist Dress",
     category: "dresses",
+    subcategory: "maxi",
     material: "Cotton mul",
     price: 5200,
     color: "Peacock teal",
@@ -273,6 +307,7 @@ export const products: Product[] = [
     id: "kantha-bandhej-overshirt",
     name: "Kantha Bandhej Overshirt",
     category: "overshirts",
+    subcategory: "boxy",
     material: "Handloom cotton",
     price: 5600,
     color: "Olive neem",

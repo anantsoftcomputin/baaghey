@@ -12,10 +12,12 @@ import {
   ImagePlus,
   PackagePlus,
   Percent,
+  Plus,
   Save,
   Search,
   Sparkles,
   Trash2,
+  VideoIcon,
 } from "lucide-react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -42,12 +44,14 @@ import {
   type Category,
   type Product,
   type ProductStatus,
+  type Subcategory,
 } from "@/lib/products";
 
 const emptyProduct: Product = {
   id: "",
   name: "",
   category: "shirts",
+  subcategory: undefined,
   material: "",
   price: 0,
   salePrice: undefined,
@@ -61,7 +65,7 @@ const emptyProduct: Product = {
   sizes: ["S", "M", "L"],
   tags: [],
   image:
-    "radial-gradient(circle at 20% 18%, #fff7e6 0 2px, transparent 3px), radial-gradient(circle at 78% 60%, #fff7e6 0 2px, transparent 3px), linear-gradient(135deg, #203a63, #486a31)",
+    "radial-gradient(circle at 20% 18%, #f4f4f4 0 2px, transparent 3px), radial-gradient(circle at 78% 60%, #f4f4f4 0 2px, transparent 3px), linear-gradient(135deg, #222, #555)",
   description: "",
   details: "",
   care: "",
@@ -73,6 +77,8 @@ const emptyCategory: Category = {
   description: "",
   sortOrder: 9,
   featured: true,
+  subcategories: [],
+  videoUrl: "",
 };
 
 const emptyCampaign: Campaign = {
@@ -176,6 +182,7 @@ export default function AdminPage() {
         sizes: cleanList(productForm.sizes),
         price: Number(productForm.price),
         ...(productForm.salePrice ? { salePrice: Number(productForm.salePrice) } : {}),
+        ...(productForm.subcategory ? { subcategory: productForm.subcategory } : {}),
         ...(productForm.description ? { description: productForm.description } : {}),
         ...(productForm.details ? { details: productForm.details } : {}),
         ...(productForm.care ? { care: productForm.care } : {}),
@@ -197,7 +204,15 @@ export default function AdminPage() {
         setNotice("Add a category name before saving.");
         return;
       }
-      await upsertCategory({ ...categoryForm, id, sortOrder: Number(categoryForm.sortOrder) });
+      await upsertCategory({
+        ...categoryForm,
+        id,
+        sortOrder: Number(categoryForm.sortOrder),
+        subcategories: (categoryForm.subcategories ?? [])
+          .map((sub, index) => ({ ...sub, id: sub.id || slugify(sub.name), sortOrder: index + 1 }))
+          .filter((sub) => sub.name),
+        ...(categoryForm.videoUrl ? { videoUrl: categoryForm.videoUrl } : {}),
+      });
       setCategoryForm(emptyCategory);
       setNotice("Category saved.");
     } catch (error) {
@@ -245,6 +260,34 @@ export default function AdminPage() {
     productChange("imageDataUrl", dataUrl);
   }
 
+  async function handleCategoryVideo(file: File | undefined) {
+    if (!file) return;
+    const dataUrl = await fileToDataUrl(file);
+    setCategoryForm((current) => ({ ...current, videoUrl: dataUrl }));
+  }
+
+  function addSubcategoryRow() {
+    setCategoryForm((current) => ({
+      ...current,
+      subcategories: [...(current.subcategories ?? []), { id: "", name: "", sortOrder: (current.subcategories?.length ?? 0) + 1 }],
+    }));
+  }
+
+  function updateSubcategoryRow(index: number, name: string) {
+    setCategoryForm((current) => {
+      const subcategories = [...(current.subcategories ?? [])];
+      subcategories[index] = { ...subcategories[index], name, id: slugify(name) };
+      return { ...current, subcategories };
+    });
+  }
+
+  function removeSubcategoryRow(index: number) {
+    setCategoryForm((current) => ({
+      ...current,
+      subcategories: (current.subcategories ?? []).filter((_, i) => i !== index),
+    }));
+  }
+
   async function adminLogin() {
     setNotice("");
     try {
@@ -264,19 +307,19 @@ export default function AdminPage() {
   }
 
   if (!authChecked) {
-    return <main className="grid min-h-screen place-items-center bg-ivory text-mehendi">Loading admin...</main>;
+    return <main className="grid min-h-screen place-items-center bg-white text-black">Loading admin...</main>;
   }
 
   if (!adminUser) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f6efe0] px-4 text-mehendi">
-        <section className="w-full max-w-md border border-mehendi/10 bg-white p-6 shadow-textile">
-          <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-mehendi/70">
+      <main className="grid min-h-screen place-items-center bg-white px-4 text-black">
+        <section className="w-full max-w-md border border-line bg-white p-6">
+          <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-mute">
             <ArrowLeft size={16} /> Back to storefront
           </Link>
-          <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={86} height={86} className="mb-5 size-20 rounded-full" />
-          <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sindoor">BAAGAY admin</p>
-          <h1 className="mt-2 font-display text-5xl font-bold tracking-normal">Sign in to manage commerce.</h1>
+          <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={72} height={72} className="mb-5 size-14 rounded-full" />
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">BAAGAY admin</p>
+          <h1 className="mt-2 text-4xl font-bold">Sign in to manage commerce.</h1>
           <div className="mt-6 grid gap-3">
             <input className="admin-input" placeholder="Admin email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} />
             <input
@@ -292,8 +335,8 @@ export default function AdminPage() {
             <button className="admin-button secondary w-full" onClick={adminGoogleLogin} disabled={!firebaseReady}>
               Continue with Google
             </button>
-            {notice && <p className="border border-sindoor/20 bg-ivory p-3 text-sm text-sindoor">{notice}</p>}
-            <p className="text-xs leading-5 text-mehendi/55">
+            {notice && <p className="border border-line bg-white p-3 text-sm text-accent">{notice}</p>}
+            <p className="text-xs leading-5 text-mute">
               For production, add Firebase security rules or custom claims so only approved admin accounts can write catalog data.
             </p>
           </div>
@@ -303,21 +346,21 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6efe0] text-mehendi">
-      <header className="sticky top-0 z-30 border-b border-mehendi/10 bg-ivory/90 backdrop-blur-xl">
+    <main className="min-h-screen bg-white text-black">
+      <header className="sticky top-0 z-30 border-b border-line bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex items-center gap-4">
-            <Link href="/" className="grid size-10 place-items-center rounded-full border border-mehendi/15 bg-white">
+            <Link href="/" className="grid size-10 place-items-center border border-line bg-white">
               <ArrowLeft size={18} />
             </Link>
-            <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={58} height={58} className="size-14 rounded-full" />
+            <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={48} height={48} className="size-11 rounded-full" />
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sindoor">BAAGAY admin</p>
-              <h1 className="font-display text-4xl font-bold tracking-normal">Commerce command center</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">BAAGAY admin</p>
+              <h1 className="text-2xl font-bold">Commerce command center</h1>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex min-h-11 items-center bg-white px-3 text-xs font-bold text-mehendi/60">
+            <span className="inline-flex min-h-11 items-center border border-line px-3 text-xs font-semibold text-mute">
               {adminUser}
             </span>
             <button className="admin-button secondary" onClick={seedCatalog} disabled={!firebaseReady}>
@@ -335,11 +378,11 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {!firebaseReady && (
-          <div className="mb-6 border border-sindoor/20 bg-white p-4 text-sm font-semibold text-sindoor">
+          <div className="mb-6 border border-line bg-white p-4 text-sm font-semibold text-accent">
             Firebase env vars are missing, so admin changes cannot persist yet.
           </div>
         )}
-        {notice && <div className="mb-6 border border-neem/20 bg-white p-4 text-sm font-semibold text-neem">{notice}</div>}
+        {notice && <div className="mb-6 border border-line bg-white p-4 text-sm font-semibold">{notice}</div>}
 
         <section className="grid gap-4 md:grid-cols-4">
           <Stat icon={<PackagePlus size={18} />} label="Active products" value={stats.active.toString()} />
@@ -348,11 +391,11 @@ export default function AdminPage() {
           <Stat icon={<Percent size={18} />} label="Live campaigns" value={stats.campaigns.toString()} />
         </section>
 
-        <nav className="mt-8 grid gap-2 border border-mehendi/10 bg-white p-2 text-sm font-extrabold uppercase tracking-[0.14em] sm:grid-cols-4">
+        <nav className="mt-8 grid gap-2 border border-line bg-white p-2 text-sm font-bold uppercase tracking-[0.08em] sm:grid-cols-4">
           {(["products", "inventory", "categories", "campaigns"] as const).map((tab) => (
             <button
               key={tab}
-              className={`h-11 ${activeTab === tab ? "bg-mehendi text-ivory" : "bg-ivory text-mehendi"}`}
+              className={`h-11 ${activeTab === tab ? "bg-black text-white" : "bg-white text-black"}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
@@ -390,13 +433,13 @@ export default function AdminPage() {
         )}
 
         {activeTab === "inventory" && (
-          <section className="mt-6 border border-mehendi/10 bg-white p-5">
+          <section className="mt-6 border border-line bg-white p-5">
             <div className="mb-5 flex items-end justify-between gap-4">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-brass">Inventory</p>
-                <h2 className="font-display text-4xl font-bold">Stock control</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Inventory</p>
+                <h2 className="text-3xl font-bold">Stock control</h2>
               </div>
-              <span className="text-sm text-mehendi/60">Realtime stock updates</span>
+              <span className="text-sm text-mute">Realtime stock updates</span>
             </div>
             <div className="overflow-x-auto">
               <table className="admin-table">
@@ -415,7 +458,7 @@ export default function AdminPage() {
                     <tr key={product.id}>
                       <td>{product.name}</td>
                       <td>{product.sku}</td>
-                      <td className={product.inventory <= product.lowStockAt ? "text-sindoor" : ""}>{product.inventory}</td>
+                      <td className={product.inventory <= product.lowStockAt ? "font-bold text-accent" : ""}>{product.inventory}</td>
                       <td>{product.lowStockAt}</td>
                       <td>{product.inventory <= product.lowStockAt ? "Low stock" : "Healthy"}</td>
                       <td>
@@ -440,7 +483,7 @@ export default function AdminPage() {
         )}
 
         {activeTab === "categories" && (
-          <section className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <Panel title="Category builder" kicker="Homepage sections">
               <Field label="Name">
                 <input className="admin-input" value={categoryForm.name} onChange={(event) => setCategoryForm({ ...categoryForm, name: event.target.value })} />
@@ -455,6 +498,46 @@ export default function AdminPage() {
                 <input type="checkbox" checked={categoryForm.featured} onChange={(event) => setCategoryForm({ ...categoryForm, featured: event.target.checked })} />
                 Show on homepage
               </label>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-bold text-mute">Subcategories</p>
+                  <button className="icon-button" onClick={addSubcategoryRow} aria-label="Add subcategory" type="button">
+                    <Plus size={14} />
+                  </button>
+                </div>
+                <div className="grid gap-2">
+                  {(categoryForm.subcategories ?? []).map((sub, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        className="admin-input"
+                        placeholder="Subcategory name"
+                        value={sub.name}
+                        onChange={(event) => updateSubcategoryRow(index, event.target.value)}
+                      />
+                      <button className="icon-button danger" onClick={() => removeSubcategoryRow(index)} aria-label="Remove subcategory" type="button">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {(categoryForm.subcategories ?? []).length === 0 && (
+                    <p className="text-xs text-faint">No subcategories yet — add one to let shoppers drill down (e.g. Full Sleeve, Half Sleeve).</p>
+                  )}
+                </div>
+              </div>
+
+              <Field label="Category video URL (autoplays on the category tile instead of a photo)">
+                <input className="admin-input" placeholder="/my-category-video.mp4 or https://..." value={categoryForm.videoUrl ?? ""} onChange={(event) => setCategoryForm({ ...categoryForm, videoUrl: event.target.value })} />
+              </Field>
+              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line bg-white p-4 text-center text-sm font-semibold">
+                <VideoIcon size={20} />
+                Or upload a short video clip
+                <input className="hidden" type="file" accept="video/*" onChange={(event) => handleCategoryVideo(event.target.files?.[0])} />
+              </label>
+              {categoryForm.videoUrl && (
+                <video className="h-40 w-full border border-line object-cover" src={categoryForm.videoUrl} muted loop autoPlay playsInline />
+              )}
+
               <button className="admin-button w-full" onClick={saveCategory} disabled={!firebaseReady}>
                 <Save size={16} /> Save category
               </button>
@@ -464,7 +547,7 @@ export default function AdminPage() {
               items={categories.map((category) => ({
                 id: category.id,
                 title: category.name,
-                meta: `${category.sortOrder} · ${category.featured ? "Homepage" : "Hidden"}`,
+                meta: `${category.sortOrder} · ${category.featured ? "Homepage" : "Hidden"} · ${category.subcategories?.length ?? 0} subcategories${category.videoUrl ? " · has video" : ""}`,
                 onEdit: () => setCategoryForm(category),
                 onDelete: async () => {
                   try {
@@ -549,6 +632,9 @@ function ProductForm({
   onImage: (file: File | undefined) => void;
   onSave: () => void;
 }) {
+  const activeCategory = categories.find((category) => category.id === form.category);
+  const subcategories: Subcategory[] = activeCategory?.subcategories ?? [];
+
   return (
     <Panel title="Product studio" kicker="Create and edit">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -561,7 +647,14 @@ function ProductForm({
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Category">
-          <select className="admin-input" value={form.category} onChange={(event) => onChange("category", event.target.value)}>
+          <select
+            className="admin-input"
+            value={form.category}
+            onChange={(event) => {
+              onChange("category", event.target.value);
+              onChange("subcategory", undefined);
+            }}
+          >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -569,14 +662,24 @@ function ProductForm({
             ))}
           </select>
         </Field>
-        <Field label="Status">
-          <select className="admin-input" value={form.status} onChange={(event) => onChange("status", event.target.value as ProductStatus)}>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
+        <Field label="Subcategory">
+          <select className="admin-input" value={form.subcategory ?? ""} onChange={(event) => onChange("subcategory", event.target.value || undefined)}>
+            <option value="">None</option>
+            {subcategories.map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
+            ))}
           </select>
         </Field>
       </div>
+      <Field label="Status">
+        <select className="admin-input" value={form.status} onChange={(event) => onChange("status", event.target.value as ProductStatus)}>
+          <option value="active">Active</option>
+          <option value="draft">Draft</option>
+          <option value="archived">Archived</option>
+        </select>
+      </Field>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Price">
           <input className="admin-input" type="number" value={form.price} onChange={(event) => onChange("price", Number(event.target.value))} />
@@ -625,7 +728,7 @@ function ProductForm({
         <input type="checkbox" checked={form.featured} onChange={(event) => onChange("featured", event.target.checked)} />
         Featured on homepage
       </label>
-      <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-mehendi/25 bg-ivory p-4 text-center text-sm font-semibold">
+      <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line bg-white p-4 text-center text-sm font-semibold">
         <ImagePlus size={20} />
         Upload product image to Realtime Database as data URL
         <input className="hidden" type="file" accept="image/*" onChange={(event) => onImage(event.target.files?.[0])} />
@@ -659,14 +762,14 @@ function ProductTable({
 }) {
   const categoryMap = new Map(categories.map((category) => [category.id, category.name]));
   return (
-    <section className="border border-mehendi/10 bg-white p-5">
+    <section className="border border-line bg-white p-5">
       <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-brass">Catalog</p>
-          <h2 className="font-display text-4xl font-bold">Products</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Catalog</p>
+          <h2 className="text-3xl font-bold">Products</h2>
         </div>
         <div className="grid gap-2 sm:grid-cols-[1fr_160px]">
-          <label className="flex h-11 items-center gap-2 border border-mehendi/15 bg-ivory px-3">
+          <label className="flex h-11 items-center gap-2 border border-line bg-white px-3">
             <Search size={16} />
             <input className="w-full bg-transparent text-sm outline-none" value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search products" />
           </label>
@@ -695,14 +798,14 @@ function ProductTable({
               <tr key={product.id}>
                 <td>
                   <div className="font-bold">{product.name}</div>
-                  <div className="text-xs text-mehendi/55">{product.sku}</div>
+                  <div className="text-xs text-mute">{product.sku}</div>
                 </td>
                 <td>{categoryMap.get(product.category) ?? product.category}</td>
                 <td>
                   ₹{product.price.toLocaleString("en-IN")}
-                  {product.salePrice ? <span className="ml-2 text-sindoor">₹{product.salePrice.toLocaleString("en-IN")}</span> : null}
+                  {product.salePrice ? <span className="ml-2 text-accent">₹{product.salePrice.toLocaleString("en-IN")}</span> : null}
                 </td>
-                <td className={product.inventory <= product.lowStockAt ? "font-bold text-sindoor" : ""}>{product.inventory}</td>
+                <td className={product.inventory <= product.lowStockAt ? "font-bold text-accent" : ""}>{product.inventory}</td>
                 <td>{product.status}</td>
                 <td>
                   <div className="flex gap-2">
@@ -725,20 +828,20 @@ function ProductTable({
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="border border-mehendi/10 bg-white p-5">
-      <div className="mb-5 grid size-10 place-items-center rounded-full bg-kesar/25 text-sindoor">{icon}</div>
-      <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-mehendi/50">{label}</p>
-      <p className="mt-2 font-display text-4xl font-bold">{value}</p>
+    <div className="border border-line bg-white p-5">
+      <div className="mb-5 grid size-10 place-items-center border border-line">{icon}</div>
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-mute">{label}</p>
+      <p className="mt-2 text-3xl font-bold">{value}</p>
     </div>
   );
 }
 
 function Panel({ title, kicker, children }: { title: string; kicker: string; children: ReactNode }) {
   return (
-    <section className="grid gap-4 border border-mehendi/10 bg-white p-5">
+    <section className="grid gap-4 border border-line bg-white p-5">
       <div>
-        <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-brass">{kicker}</p>
-        <h2 className="font-display text-4xl font-bold">{title}</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">{kicker}</p>
+        <h2 className="text-3xl font-bold">{title}</h2>
       </div>
       {children}
     </section>
@@ -747,7 +850,7 @@ function Panel({ title, kicker, children }: { title: string; kicker: string; chi
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid gap-1 text-sm font-bold text-mehendi/75">
+    <label className="grid gap-1 text-sm font-semibold text-black">
       {label}
       {children}
     </label>
@@ -762,14 +865,14 @@ function ListPanel({
   items: { id: string; title: string; meta: string; onEdit: () => void; onDelete: () => void }[];
 }) {
   return (
-    <section className="border border-mehendi/10 bg-white p-5">
-      <h2 className="font-display text-4xl font-bold">{title}</h2>
+    <section className="border border-line bg-white p-5">
+      <h2 className="text-3xl font-bold">{title}</h2>
       <div className="mt-5 grid gap-3">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center justify-between gap-3 border border-mehendi/10 bg-ivory p-4">
+          <div key={item.id} className="flex items-center justify-between gap-3 border border-line bg-white p-4">
             <div>
               <p className="font-bold">{item.title}</p>
-              <p className="text-sm text-mehendi/55">{item.meta}</p>
+              <p className="text-sm text-mute">{item.meta}</p>
             </div>
             <div className="flex gap-2">
               <button className="icon-button" onClick={item.onEdit}>

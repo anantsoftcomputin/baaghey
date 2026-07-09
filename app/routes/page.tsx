@@ -10,11 +10,11 @@ const routes = [
 
 export default function RoutesPage() {
   return (
-    <main className="min-h-screen bg-[#fffdf1] p-8 text-ink">
-      <h1 className="font-display text-5xl font-bold">BAAGAY routes</h1>
+    <main className="min-h-screen bg-white p-8 text-black">
+      <h1 className="text-5xl font-bold">BAAGAY routes</h1>
       <div className="mt-8 grid gap-3">
         {routes.map(([href, label]) => (
-          <Link key={href} href={href} className="glass-card p-4 font-bold">
+          <Link key={href} href={href} className="border border-line p-4 font-bold">
             {label}: {href}
           </Link>
         ))}
