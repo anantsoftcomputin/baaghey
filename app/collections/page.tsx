@@ -105,9 +105,9 @@ export default function CollectionsPage() {
                 <p className="text-sm leading-6 text-mute">{category.description}</p>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.06em]">
-                  <span className="border border-line px-3 py-1.5">{count} {count === 1 ? "piece" : "pieces"}</span>
+                  <span className="border border-green/30 bg-green-light px-3 py-1.5 text-green-dark">{count} {count === 1 ? "piece" : "pieces"}</span>
                   {minPrice !== undefined && (
-                    <span className="border border-line px-3 py-1.5 text-accent">
+                    <span className="border border-pink/30 bg-pink-light px-3 py-1.5 text-pink-dark">
                       {minPrice === maxPrice ? formatPrice(minPrice) : `${formatPrice(minPrice)}–${formatPrice(maxPrice!)}`}
                     </span>
                   )}
@@ -119,7 +119,7 @@ export default function CollectionsPage() {
                       <Link
                         key={sub.id}
                         href={`/shop?category=${category.id}&subcategory=${sub.id}`}
-                        className="border border-line px-3 py-1.5 text-xs font-semibold"
+                        className="border border-yellow/40 bg-yellow-light px-3 py-1.5 text-xs font-semibold text-yellow-dark"
                       >
                         {sub.name} {subCount ? `(${subCount})` : ""}
                       </Link>
@@ -129,7 +129,7 @@ export default function CollectionsPage() {
 
                 <Link
                   href={`/shop?category=${category.id}`}
-                  className="mt-auto inline-flex items-center gap-2 pt-5 text-xs font-bold uppercase tracking-[0.1em]"
+                  className="mt-auto inline-flex items-center gap-2 pt-5 text-xs font-bold uppercase tracking-[0.1em] text-green-dark"
                 >
                   Shop {category.name} <ArrowRight size={15} />
                 </Link>

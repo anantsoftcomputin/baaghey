@@ -27,8 +27,8 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-line bg-white">
-      <div className="flex h-9 items-center justify-center bg-black px-4 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-green/20 bg-green-light">
+      <div className="flex h-9 items-center justify-center bg-green-dark px-4 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
         Free shipping over ₹3,000 · Hand-tied in Gujarat
       </div>
       <div className="container-max flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
@@ -55,7 +55,7 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
                 <div className="grid grid-cols-3 gap-6">
                   {sortedCategories.map((category) => (
                     <div key={category.id}>
-                      <Link href={`/shop?category=${category.id}`} className="text-sm font-bold">
+                      <Link href={`/shop?category=${category.id}`} className="text-sm font-bold text-green-dark">
                         {category.name}
                       </Link>
                       <ul className="mt-3 grid gap-2">
@@ -63,7 +63,7 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
                           <li key={sub.id}>
                             <Link
                               href={`/shop?category=${category.id}&subcategory=${sub.id}`}
-                              className="text-sm text-mute hover:text-black"
+                              className="text-sm text-mute hover:text-green-dark"
                             >
                               {sub.name}
                             </Link>
@@ -93,7 +93,7 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
           <button aria-label="Cart" className="relative grid size-10 place-items-center">
             <ShoppingBag size={19} />
             {count > 0 && (
-              <span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-black text-[9px] font-bold text-white">
+              <span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-pink-dark text-[9px] font-bold text-white">
                 {count > 99 ? "99+" : count}
               </span>
             )}
@@ -135,11 +135,11 @@ export function StoreHeader({ count = 0 }: { count?: number }) {
                     )}
                   </button>
                   {openAccordion === category.id && (
-                    <ul className="grid gap-1 px-4 pb-4">
+                    <ul className="grid gap-1 bg-green-light/60 px-4 pb-4">
                       <li>
                         <Link
                           href={`/shop?category=${category.id}`}
-                          className="block py-2 text-sm text-mute"
+                          className="block py-2 text-sm text-green-dark"
                           onClick={() => setMenuOpen(false)}
                         >
                           All {category.name}

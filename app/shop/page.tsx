@@ -77,7 +77,7 @@ export default function ShopPage() {
       <section className="container-max px-4 pb-3 sm:px-6 lg:px-10">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
           <button
-            className={`h-9 shrink-0 border px-4 text-xs font-bold uppercase tracking-[0.06em] ${category === "all" ? "border-black bg-black text-white" : "border-line"}`}
+            className={`h-9 shrink-0 border px-4 text-xs font-bold uppercase tracking-[0.06em] ${category === "all" ? "border-green bg-green text-white" : "border-line"}`}
             onClick={() => {
               setCategory("all");
               setSubcategory("all");
@@ -88,7 +88,7 @@ export default function ShopPage() {
           {categories.map((item) => (
             <button
               key={item.id}
-              className={`h-9 shrink-0 border px-4 text-xs font-bold uppercase tracking-[0.06em] ${category === item.id ? "border-black bg-black text-white" : "border-line"}`}
+              className={`h-9 shrink-0 border px-4 text-xs font-bold uppercase tracking-[0.06em] ${category === item.id ? "border-green bg-green text-white" : "border-line"}`}
               onClick={() => {
                 setCategory(item.id);
                 setSubcategory("all");
@@ -102,7 +102,7 @@ export default function ShopPage() {
         {(activeCategory?.subcategories?.length ?? 0) > 0 && (
           <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
             <button
-              className={`h-8 shrink-0 border px-3 text-xs font-semibold ${subcategory === "all" ? "border-black text-black" : "border-line text-mute"}`}
+              className={`h-8 shrink-0 border px-3 text-xs font-semibold ${subcategory === "all" ? "border-green-dark text-green-dark" : "border-line text-mute"}`}
               onClick={() => setSubcategory("all")}
             >
               All {activeCategory!.name}
@@ -110,7 +110,7 @@ export default function ShopPage() {
             {activeCategory!.subcategories!.map((sub) => (
               <button
                 key={sub.id}
-                className={`h-8 shrink-0 border px-3 text-xs font-semibold ${subcategory === sub.id ? "border-black text-black" : "border-line text-mute"}`}
+                className={`h-8 shrink-0 border px-3 text-xs font-semibold ${subcategory === sub.id ? "border-green-dark text-green-dark" : "border-line text-mute"}`}
                 onClick={() => setSubcategory(sub.id)}
               >
                 {sub.name}
@@ -144,7 +144,7 @@ export default function ShopPage() {
               >
                 <Filter size={16} /> Filters
                 {activeFilterCount > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-black text-[9px] font-bold text-white">
+                  <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-pink-dark text-[9px] font-bold text-white">
                     {activeFilterCount}
                   </span>
                 )}
@@ -192,7 +192,7 @@ export default function ShopPage() {
             </div>
             <div className="p-5 pt-0">
               <button
-                className="flex h-12 w-full items-center justify-center gap-2 bg-black text-sm font-bold uppercase tracking-[0.1em] text-white"
+                className="flex h-12 w-full items-center justify-center gap-2 bg-green text-sm font-bold uppercase tracking-[0.1em] text-white"
                 onClick={() => setMobileFiltersOpen(false)}
               >
                 Show {filteredProducts.length} pieces

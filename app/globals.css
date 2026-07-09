@@ -56,7 +56,7 @@ button:disabled {
 }
 
 .tag-sale {
-  color: #B3441E;
+  color: #C25478;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -69,7 +69,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #000000;
+  background: #2F5D33;
   color: #ffffff;
   padding: 0 16px;
   font-size: 12px;
@@ -80,8 +80,8 @@ button:disabled {
 
 .admin-button.secondary {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  color: #000000;
+  border: 1px solid rgba(47, 93, 51, 0.3);
+  color: #2F5D33;
 }
 
 .admin-input {
@@ -96,7 +96,7 @@ button:disabled {
 }
 
 .admin-input:focus {
-  border-color: #000000;
+  border-color: #2F5D33;
 }
 
 .admin-table {
@@ -136,7 +136,7 @@ button:disabled {
 }
 
 .icon-button.danger {
-  color: #B3441E;
+  color: #C25478;
 }
 
 @media (prefers-reduced-motion: reduce) {

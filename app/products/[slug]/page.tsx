@@ -39,7 +39,7 @@ export default function ProductPage() {
         <StoreHeader />
         <section className="container-max px-4 pt-40 sm:px-6 lg:px-10">
           <h1 className="text-5xl font-bold">Product not found.</h1>
-          <Link href="/shop" className="mt-8 inline-flex h-12 items-center bg-black px-5 text-sm font-bold uppercase tracking-[0.1em] text-white">
+          <Link href="/shop" className="mt-8 inline-flex h-12 items-center bg-green px-5 text-sm font-bold uppercase tracking-[0.1em] text-white">
             Back to shop
           </Link>
         </section>
@@ -75,7 +75,7 @@ export default function ProductPage() {
           <p className="mt-5 text-2xl font-bold">
             {product.salePrice ? (
               <>
-                {formatPrice(product.salePrice)}
+                <span className="text-pink-dark">{formatPrice(product.salePrice)}</span>
                 <span className="ml-3 text-lg text-faint line-through">{formatPrice(product.price)}</span>
               </>
             ) : (
@@ -90,7 +90,7 @@ export default function ProductPage() {
               {product.sizes.map((size) => (
                 <button
                   key={size}
-                  className={`grid size-12 place-items-center border text-sm font-bold ${selectedSize === size ? "border-black bg-black text-white" : "border-line bg-white"}`}
+                  className={`grid size-12 place-items-center border text-sm font-bold ${selectedSize === size ? "border-green bg-green text-white" : "border-line bg-white"}`}
                   onClick={() => setSelectedSize(size)}
                 >
                   {size}
@@ -100,8 +100,8 @@ export default function ProductPage() {
           </div>
 
           <div className="mt-6 hidden gap-3 sm:grid-cols-2 lg:grid">
-            <button className="h-12 border border-black bg-white text-sm font-bold uppercase tracking-[0.1em] text-black">Add to cart</button>
-            <button className="h-12 bg-black text-sm font-bold uppercase tracking-[0.1em] text-white">Buy now</button>
+            <button className="h-12 border border-green bg-white text-sm font-bold uppercase tracking-[0.1em] text-green-dark">Add to cart</button>
+            <button className="h-12 bg-green text-sm font-bold uppercase tracking-[0.1em] text-white">Buy now</button>
           </div>
 
           <div className="mt-8 grid gap-5 border border-line p-5">
@@ -149,7 +149,7 @@ export default function ProductPage() {
             <p className="font-bold leading-tight">
               {product.salePrice ? (
                 <>
-                  {formatPrice(product.salePrice)}
+                  <span className="text-pink-dark">{formatPrice(product.salePrice)}</span>
                   <span className="ml-1.5 text-xs text-faint line-through">{formatPrice(product.price)}</span>
                 </>
               ) : (
@@ -157,8 +157,8 @@ export default function ProductPage() {
               )}
             </p>
           </div>
-          <button className="h-12 flex-1 border border-black text-xs font-bold uppercase tracking-[0.08em] text-black">Add to cart</button>
-          <button className="h-12 flex-1 bg-black text-xs font-bold uppercase tracking-[0.08em] text-white">Buy now</button>
+          <button className="h-12 flex-1 border border-green text-xs font-bold uppercase tracking-[0.08em] text-green-dark">Add to cart</button>
+          <button className="h-12 flex-1 bg-green text-xs font-bold uppercase tracking-[0.08em] text-white">Buy now</button>
         </div>
       </div>
     </main>

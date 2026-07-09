@@ -395,7 +395,7 @@ export default function AdminPage() {
           {(["products", "inventory", "categories", "campaigns"] as const).map((tab) => (
             <button
               key={tab}
-              className={`h-11 ${activeTab === tab ? "bg-black text-white" : "bg-white text-black"}`}
+              className={`h-11 ${activeTab === tab ? "bg-green text-white" : "bg-white text-black"}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

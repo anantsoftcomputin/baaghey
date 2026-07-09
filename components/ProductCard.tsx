@@ -28,13 +28,18 @@ export function ProductCard({ product }: { product: Product }) {
         )}
 
         {product.salePrice && (
-          <span className="absolute left-2 top-2 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-accent">
+          <span className="absolute left-2 top-2 bg-pink px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
             Sale
+          </span>
+        )}
+        {product.featured && !product.salePrice && (
+          <span className="absolute left-2 top-2 bg-yellow px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-ink">
+            Featured
           </span>
         )}
         <button
           aria-label="Add to wishlist"
-          className="absolute right-2 top-2 grid size-8 place-items-center bg-white/90 text-black"
+          className="absolute right-2 top-2 grid size-8 place-items-center bg-white/90 text-green-dark"
           onClick={(event) => event.preventDefault()}
         >
           <Heart size={15} />
@@ -48,7 +53,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-1.5 flex items-center gap-2 text-sm">
           {product.salePrice ? (
             <>
-              <span className="font-bold">{formatPrice(product.salePrice)}</span>
+              <span className="font-bold text-pink-dark">{formatPrice(product.salePrice)}</span>
               <span className="text-faint line-through">{formatPrice(product.price)}</span>
             </>
           ) : (

@@ -23,7 +23,7 @@ export function BottomNav({ count = 0 }: { count?: number }) {
   const pathname = usePathname() ?? "/";
 
   return (
-    <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-40 border-t border-green/20 bg-green-light pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="grid grid-cols-5">
         {TABS.map((tab) => {
           const active = tab.isActive(pathname);
@@ -36,14 +36,14 @@ export function BottomNav({ count = 0 }: { count?: number }) {
               className="relative flex flex-col items-center justify-center gap-1 py-2.5"
             >
               <span className="relative">
-                <Icon size={20} className={active ? "text-black" : "text-faint"} strokeWidth={active ? 2.4 : 1.7} />
+                <Icon size={20} className={active ? "text-green-dark" : "text-mute"} strokeWidth={active ? 2.4 : 1.7} />
                 {tab.href === "/cart" && count > 0 && (
-                  <span className="absolute -right-2 -top-1.5 grid size-4 place-items-center rounded-full bg-black text-[9px] font-bold text-white">
+                  <span className="absolute -right-2 -top-1.5 grid size-4 place-items-center rounded-full bg-pink-dark text-[9px] font-bold text-white">
                     {count > 99 ? "99+" : count}
                   </span>
                 )}
               </span>
-              <span className={`text-[10px] tracking-wide ${active ? "font-bold text-black" : "text-faint"}`}>
+              <span className={`text-[10px] tracking-wide ${active ? "font-bold text-green-dark" : "text-mute"}`}>
                 {tab.label}
               </span>
             </Link>

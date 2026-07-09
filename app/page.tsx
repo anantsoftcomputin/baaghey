@@ -166,7 +166,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <div className="container-max relative flex min-h-[calc(90svh-6rem)] flex-col justify-end px-4 pb-16 sm:px-6 lg:px-10">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-white/70">New season</p>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-yellow">New season</p>
           <h1 className="max-w-3xl text-5xl font-bold leading-[1.02] sm:text-7xl">
             Modern Bandhani, made to wear every day.
           </h1>
@@ -174,7 +174,7 @@ export default function Home() {
             Contemporary Bandhej shirts, dresses, and overshirts made with the restraint of modern fashion and the craft of Gujarat.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/shop" className="inline-flex h-12 items-center gap-2 bg-white px-6 text-sm font-bold uppercase tracking-[0.1em] text-black">
+            <Link href="/shop" className="inline-flex h-12 items-center gap-2 bg-green px-6 text-sm font-bold uppercase tracking-[0.1em] text-white">
               Shop now <ArrowRight size={16} />
             </Link>
             <a href="#craft" className="inline-flex h-12 items-center gap-2 border border-white/50 px-6 text-sm font-bold uppercase tracking-[0.1em] text-white">
@@ -190,7 +190,7 @@ export default function Home() {
       <section id="collections" className="container-max px-4 py-14 sm:px-6 lg:px-10">
         <div className="mb-8 flex items-end justify-between gap-4">
           <h2 className="text-3xl font-bold sm:text-4xl">Shop by category</h2>
-          <Link href="/collections" className="hidden items-center gap-1.5 text-sm font-semibold sm:flex">
+          <Link href="/collections" className="hidden items-center gap-1.5 text-sm font-semibold text-green-dark sm:flex">
             View all <ArrowRight size={14} />
           </Link>
         </div>
@@ -209,7 +209,7 @@ export default function Home() {
               <h2 className="text-3xl font-bold sm:text-4xl">Bandhej for now</h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-mute">Hand-tied pieces, picked for the season.</p>
             </div>
-            <Link href="/shop" className="hidden items-center gap-1.5 text-sm font-semibold sm:flex">
+            <Link href="/shop" className="hidden items-center gap-1.5 text-sm font-semibold text-green-dark sm:flex">
               Shop all <ArrowRight size={14} />
             </Link>
           </div>
@@ -237,13 +237,17 @@ export default function Home() {
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            {stories.map((story) => (
-              <article key={story.city} className="border border-line p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-mute">{story.city}</p>
-                <h3 className="mt-6 text-xl font-bold leading-snug">{story.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-mute">{story.copy}</p>
-              </article>
-            ))}
+            {stories.map((story, index) => {
+              const bar = [ "bg-green", "bg-pink", "bg-yellow" ][index % 3];
+              return (
+                <article key={story.city} className="border border-line p-5">
+                  <span className={`block h-1 w-10 ${bar}`} />
+                  <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-mute">{story.city}</p>
+                  <h3 className="mt-3 text-xl font-bold leading-snug">{story.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-mute">{story.copy}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -260,14 +264,17 @@ export default function Home() {
           </p>
         </div>
         <div className="grid gap-px border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
-          {bandhaniSteps.map((step) => (
-            <article key={step.step} className="flex flex-col bg-white p-6">
-              <span className="text-3xl font-bold text-faint">{step.step}</span>
-              <p className="mt-6 text-2xl font-bold leading-none">{step.gujarati}</p>
-              <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.1em]">{step.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-mute">{step.copy}</p>
-            </article>
-          ))}
+          {bandhaniSteps.map((step, index) => {
+            const dot = [ "text-green", "text-pink-dark", "text-yellow-dark", "text-green-dark" ][index % 4];
+            return (
+              <article key={step.step} className="flex flex-col bg-white p-6">
+                <span className={`text-3xl font-bold ${dot}`}>{step.step}</span>
+                <p className="mt-6 text-2xl font-bold leading-none">{step.gujarati}</p>
+                <h3 className="mt-3 text-sm font-bold uppercase tracking-[0.1em]">{step.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-mute">{step.copy}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -279,9 +286,9 @@ export default function Home() {
             <h2 className="mt-2 text-3xl font-bold sm:text-4xl">Notes from the knot.</h2>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
-            <EditorialCard title="The Kamal shirt" copy="A relaxed camp collar, lotus-vine ties, and a madder red that moves easily from a garba night to a Sunday lunch." />
-            <EditorialCard title="Bandhej in black" copy="Raat brings black into a festive craft — the same hand-tied dots, lit with gold, for a sharper modern evening." />
-            <EditorialCard title="From coast to city" copy="Kutch dyes, Saurashtra sun, and shapes cut for denim and daylight. Heritage you can wear on an ordinary Tuesday." />
+            <EditorialCard accent="green" title="The Kamal shirt" copy="A relaxed camp collar, lotus-vine ties, and a madder red that moves easily from a garba night to a Sunday lunch." />
+            <EditorialCard accent="pink" title="Bandhej in black" copy="Raat brings black into a festive craft — the same hand-tied dots, lit with gold, for a sharper modern evening." />
+            <EditorialCard accent="yellow" title="From coast to city" copy="Kutch dyes, Saurashtra sun, and shapes cut for denim and daylight. Heritage you can wear on an ordinary Tuesday." />
           </div>
         </div>
       </section>
@@ -294,15 +301,15 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">Reserve a hand-tied piece.</h2>
           </div>
           <div className="grid gap-3">
-            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-black" placeholder="Name" value={form.name} onChange={(event) => updateForm("name", event.target.value)} />
-            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-black" placeholder="Email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
-            <select className="h-12 border border-line px-4 text-sm outline-none focus:border-black" value={selectedProduct} onChange={(event) => setSelectedProduct(event.target.value)}>
+            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-green" placeholder="Name" value={form.name} onChange={(event) => updateForm("name", event.target.value)} />
+            <input className="h-12 border border-line px-4 text-sm outline-none focus:border-green" placeholder="Email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
+            <select className="h-12 border border-line px-4 text-sm outline-none focus:border-green" value={selectedProduct} onChange={(event) => setSelectedProduct(event.target.value)}>
               {activeProducts.map((product) => (
                 <option key={product.id}>{product.name}</option>
               ))}
             </select>
-            <textarea className="min-h-24 border border-line p-4 text-sm outline-none focus:border-black" placeholder="Sizing, occasion, or styling note" value={form.note} onChange={(event) => updateForm("note", event.target.value)} />
-            <button className="inline-flex h-12 items-center justify-center gap-2 bg-black px-5 text-sm font-bold uppercase tracking-[0.1em] text-white disabled:opacity-60" disabled={!firebaseReady} onClick={handleWishlistLead}>
+            <textarea className="min-h-24 border border-line p-4 text-sm outline-none focus:border-green" placeholder="Sizing, occasion, or styling note" value={form.note} onChange={(event) => updateForm("note", event.target.value)} />
+            <button className="inline-flex h-12 items-center justify-center gap-2 bg-green px-5 text-sm font-bold uppercase tracking-[0.1em] text-white disabled:opacity-60" disabled={!firebaseReady} onClick={handleWishlistLead}>
               Save request <ArrowRight size={16} />
             </button>
           </div>
@@ -317,7 +324,7 @@ export default function Home() {
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             {sortedCategories.map((category) => (
-              <Link key={category.id} className="border border-line p-4 text-sm font-semibold" href={`/shop?category=${category.id}`}>
+              <Link key={category.id} className="border border-line p-4 text-sm font-semibold hover:border-green hover:text-green-dark" href={`/shop?category=${category.id}`}>
                 {category.name}
               </Link>
             ))}
@@ -379,10 +386,17 @@ function CategoryTile({ category, fallbackPhoto }: { category: Category; fallbac
   );
 }
 
-function EditorialCard({ title, copy }: { title: string; copy: string }) {
+const EDITORIAL_ACCENTS: Record<string, string> = {
+  green: "bg-green",
+  pink: "bg-pink",
+  yellow: "bg-yellow",
+};
+
+function EditorialCard({ title, copy, accent }: { title: string; copy: string; accent: string }) {
   return (
     <article className="flex min-h-56 flex-col border border-line p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-mute">Journal</p>
+      <span className={`block h-1 w-10 ${EDITORIAL_ACCENTS[accent] ?? "bg-green"}`} />
+      <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-mute">Journal</p>
       <h3 className="mt-auto pt-8 text-2xl font-bold leading-tight">{title}</h3>
       <p className="mt-3 max-w-sm text-sm leading-6 text-mute">{copy}</p>
     </article>
@@ -424,7 +438,7 @@ function AuthDrawer({
         <h2 className="mt-6 text-3xl font-bold">Join the list.</h2>
         <div className="mt-6 grid grid-cols-3 border border-line text-sm font-bold">
           {(["email", "google", "phone"] as AuthMode[]).map((item) => (
-            <button key={item} className={`h-12 capitalize ${mode === item ? "bg-black text-white" : "bg-white"}`} onClick={() => onMode(item)}>
+            <button key={item} className={`h-12 capitalize ${mode === item ? "bg-green text-white" : "bg-white"}`} onClick={() => onMode(item)}>
               {item}
             </button>
           ))}
