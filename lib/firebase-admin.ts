@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import { applicationDefault, cert, getApps, initializeApp, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getDatabase } from "firebase-admin/database";
@@ -9,20 +10,28 @@ function privateKey() {
 
 const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const hasInlineCredentials = Boolean(process.env.FIREBASE_ADMIN_PROJECT_ID && process.env.FIREBASE_ADMIN_CLIENT_EMAIL && privateKey());
-const hasCredentialsFile = Boolean(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+// A key-file path only works on the machine that has the file (local dev). On a
+// host such as Netlify it usually points nowhere, and Firebase Admin would then
+// retry forever instead of failing, so a missing file counts as no credentials.
+const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const hasCredentialsFile = Boolean(credentialsPath && existsSync(credentialsPath));
+if (credentialsPath && !hasCredentialsFile && !hasInlineCredentials) {
+  console.warn(`GOOGLE_APPLICATION_CREDENTIALS points to a missing file (${credentialsPath}). Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY instead.`);
+}
 
 export const firebaseAdminReady = Boolean(projectId && (hasInlineCredentials || hasCredentialsFile) && process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
 
 let adminApp: App | null = null;
 
 if (firebaseAdminReady) {
-  const credential = hasCredentialsFile
-    ? applicationDefault()
-    : cert({
+  // Inline values win: they are what a hosted deploy uses.
+  const credential = hasInlineCredentials
+    ? cert({
         projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
         clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
         privateKey: privateKey(),
-      });
+      })
+    : applicationDefault();
   adminApp = getApps()[0] ?? initializeApp({
     credential,
     projectId,

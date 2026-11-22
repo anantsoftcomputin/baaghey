@@ -4,11 +4,17 @@ import { campaigns as seedCampaigns, categories as seedCategories, products as s
 import { effectivePrice, findCampaign, orderTotals, type CartItem } from "@/lib/commerce";
 import { productPhoto, productSlug } from "@/lib/catalog";
 
+/** Realtime Database reads wait indefinitely when credentials are broken, which
+ * would hang every page render and the build. Give up after a few seconds. */
+function withTimeout<T>(promise: Promise<T>, ms = 8000) {
+  return Promise.race([promise, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Firebase read timed out after ${ms} ms`)), ms))]);
+}
+
 /** Live catalog when Firebase Admin is configured, otherwise the seed catalog. */
 export async function serverProducts(): Promise<Product[]> {
   if (!adminDatabase) return seedProducts;
   try {
-    const remote = (await adminDatabase.ref("catalog/products").get()).val() as Record<string, Product> | null;
+    const remote = (await withTimeout(adminDatabase.ref("catalog/products").get())).val() as Record<string, Product> | null;
     return remote ? Object.entries(remote).map(([id, product]) => ({ ...product, id })) : seedProducts;
   } catch (error) {
     console.error("Could not read catalog; using seed products", error);
@@ -20,7 +26,7 @@ export async function serverProducts(): Promise<Product[]> {
 export async function serverCategories(): Promise<Category[]> {
   if (!adminDatabase) return seedCategories;
   try {
-    const remote = (await adminDatabase.ref("catalog/categories").get()).val() as Record<string, Category> | null;
+    const remote = (await withTimeout(adminDatabase.ref("catalog/categories").get())).val() as Record<string, Category> | null;
     return remote ? Object.entries(remote).map(([id, category]) => ({ ...category, id })) : seedCategories;
   } catch (error) {
     console.error("Could not read categories; using seed categories", error);
@@ -46,7 +52,7 @@ export const catalogSnapshot = unstable_cache(
 
 export async function serverCampaigns(): Promise<Campaign[]> {
   if (!adminDatabase) return seedCampaigns;
-  const remote = (await adminDatabase.ref("catalog/campaigns").get()).val() as Record<string, Campaign> | null;
+  const remote = (await withTimeout(adminDatabase.ref("catalog/campaigns").get())).val() as Record<string, Campaign> | null;
   return remote ? Object.values(remote) : [];
 }
 
