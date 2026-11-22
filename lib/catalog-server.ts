@@ -6,7 +6,7 @@ import { productPhoto, productSlug } from "@/lib/catalog";
 
 /** Realtime Database reads wait indefinitely when credentials are broken, which
  * would hang every page render and the build. Give up after a few seconds. */
-function withTimeout<T>(promise: Promise<T>, ms = 8000) {
+function withTimeout<T>(promise: Promise<T>, ms = 15000) {
   return Promise.race([promise, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Firebase read timed out after ${ms} ms`)), ms))]);
 }
 

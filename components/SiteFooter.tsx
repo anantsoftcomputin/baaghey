@@ -63,7 +63,7 @@ export function SiteFooter() {
       </div>
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/65 via-black/35 to-black/5" />
 
-      <div className="container-max gutter py-14 sm:py-16">
+      <div className="container-max gutter pb-[calc(104px+env(safe-area-inset-bottom))] pt-14 sm:pt-16 lg:pb-16">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-20">
         <div className="max-w-sm">
           <div data-footer-item><Wordmark tone={SITE_MEDIA.footerWordmark} className="text-[56px] drop-shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[68px]" /></div>

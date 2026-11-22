@@ -89,11 +89,11 @@ export function StoreHeader({ overlay = false, count }: { overlay?: boolean; cou
             </Link>
 
             <div className="flex items-center justify-end">
-              <Link href="/search" aria-label="Search" className="grid size-10 place-items-center"><Search size={18} strokeWidth={1.7} /></Link>
+              <Link href="/search" aria-label="Search" className="hidden size-10 place-items-center lg:grid"><Search size={18} strokeWidth={1.7} /></Link>
               {user
-                ? <Link href="/account" aria-label="Your account" className="hidden size-10 place-items-center sm:grid"><UserRound size={18} strokeWidth={1.7} /></Link>
-                : <button aria-label="Sign in" className="hidden size-10 place-items-center sm:grid" onClick={openAuth}><UserRound size={18} strokeWidth={1.7} /></button>}
-              <button onClick={openBag} aria-label={`Open bag, ${cartCount} items`} className="relative grid size-10 place-items-center">
+                ? <Link href="/account" aria-label="Your account" className="grid size-10 place-items-center"><UserRound size={18} strokeWidth={1.7} /></Link>
+                : <button aria-label="Sign in" className="grid size-10 place-items-center" onClick={openAuth}><UserRound size={18} strokeWidth={1.7} /></button>}
+              <button onClick={openBag} aria-label={`Open bag, ${cartCount} items`} className={`relative size-10 place-items-center ${pathname.startsWith("/products/") ? "grid" : "hidden lg:grid"}`}>
                 <ShoppingBag size={18} strokeWidth={1.7} />
                 {cartCount > 0 && <span ref={badge} className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-pink text-[9px] font-bold text-white">{cartCount > 9 ? "9+" : cartCount}</span>}
               </button>

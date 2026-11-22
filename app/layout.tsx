@@ -6,6 +6,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { BagDrawer } from "@/components/BagDrawer";
 import { QuickView } from "@/components/QuickView";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { BottomNav } from "@/components/BottomNav";
 import { MotionReady } from "@/components/motion/MotionReady";
 import { CatalogProvider } from "@/hooks/useCatalog";
 import { catalogSnapshot } from "@/lib/catalog-server";
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Lets the bottom bar sit above the iPhone home indicator via env(safe-area-inset-*).
+  viewportFit: "cover",
   themeColor: "#4E6A31",
 };
 
@@ -61,6 +64,7 @@ export default async function RootLayout({
           <QuickView />
           <BagDrawer />
           <WhatsAppButton />
+          <BottomNav />
           <AuthDialog />
           <MotionReady />
         </CommerceProvider>

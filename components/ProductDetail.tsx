@@ -47,6 +47,8 @@ export function ProductDetail({
   const [active, setActive] = useState(0);
   const [chartOpen, setChartOpen] = useState(false);
   const [hint, setHint] = useState(false);
+  /** Phones: a buy bar appears whenever the main add button is off screen. */
+  const [barVisible, setBarVisible] = useState(false);
   const photos = productPhotos(product);
   const wished = isWishlisted(product.id);
   const stock = size ? stockFor(product, size) : 0;
@@ -70,10 +72,20 @@ export function ProductDetail({
     return () => mm.revert();
   }, { scope: root, dependencies: [product.id], revertOnUpdate: true });
 
+  useEffect(() => {
+    const target = button.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setBarVisible(!entry.isIntersecting), { threshold: 0 });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
   function addToBag() {
     if (!size) {
       setHint(true);
-      root.current?.querySelector<HTMLButtonElement>('[role="radio"]:not([disabled])')?.focus();
+      const first = root.current?.querySelector<HTMLButtonElement>('[role="radio"]:not([disabled])');
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      first?.focus({ preventScroll: true });
       return;
     }
     if (stock <= 0) return;
@@ -198,6 +210,21 @@ export function ProductDetail({
       )}
 
       {chartOpen && <SizeChart onClose={() => setChartOpen(false)} />}
+
+      {!soldOut && (
+        <div aria-hidden={!barVisible}
+          className={`${variant === "modal" ? "sticky" : "fixed inset-x-0"} bottom-0 z-30 border-t border-line bg-white/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-xl transition-[transform,opacity] duration-500 ease-silk lg:hidden ${barVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"}`}>
+          <div className="mx-auto flex max-w-xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.1em]">{product.name}</p>
+              <p className="text-[13px]">{product.salePrice ? <><span className="text-pink-dark">{formatPrice(product.salePrice)}</span> <span className="ml-1 text-[11px] text-mute line-through">{formatPrice(product.price)}</span></> : formatPrice(product.price)}{size && <span className="ml-2 text-[11px] text-mute">Size {size}</span>}</p>
+            </div>
+            <button tabIndex={barVisible ? 0 : -1} onClick={addToBag} disabled={Boolean(size && stock <= 0)} className="btn btn-primary h-11 shrink-0 rounded-full px-6">
+              {added ? <><Check size={15} /> Added</> : size ? "Add to cart" : "Select size"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

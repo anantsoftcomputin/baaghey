@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
+import { firebaseReady, subscribeProducts } from "@/lib/firebase";
 import { categories as seedCategories, products as seedProducts, type Category, type Product } from "@/lib/products";
 
 export type Promotion = { code: string; name: string; discountPercent: number };
@@ -13,24 +13,22 @@ const CatalogContext = createContext<CatalogValue | null>(null);
 
 /** Holds the one live catalog subscription for the whole app. It starts from the
  * server's snapshot (so the first paint is already the live catalog, not the
- * seed) and then follows Firebase in real time. An empty database falls back to
- * the seed catalog, the same rule the server applies when pricing a checkout. */
+ * seed) and then follows products in real time. Categories come only from the
+ * server snapshot (refreshed every few minutes): they rarely change, and a live
+ * subscription would download any media embedded in them on every page. An
+ * empty database falls back to the seed catalog, as the server does. */
 export function CatalogProvider({ initial, children }: { initial?: CatalogSnapshot; children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(initial?.products.length ? initial.products : seedProducts);
-  const [categories, setCategories] = useState<Category[]>(initial?.categories.length ? initial.categories : seedCategories);
+  const categories = initial?.categories.length ? initial.categories : seedCategories;
   const [productsReady, setProductsReady] = useState(!firebaseReady);
   const [promotion, setPromotion] = useState<Promotion | null>(null);
 
   useEffect(() => {
     if (!firebaseReady) return;
-    const unsubs = [
-      subscribeProducts((items) => {
-        setProducts(items.length ? items : seedProducts);
-        setProductsReady(true);
-      }),
-      subscribeCategories((items) => setCategories(items.length ? items : seedCategories)),
-    ];
-    return () => unsubs.forEach((unsubscribe) => unsubscribe());
+    return subscribeProducts((items) => {
+      setProducts(items.length ? items : seedProducts);
+      setProductsReady(true);
+    });
   }, []);
 
   useEffect(() => {

@@ -95,14 +95,15 @@ function QuickViewDialog({ productId }: { productId: string }) {
     <div className="fixed inset-0 z-[75] flex items-end justify-center md:items-center md:p-6">
       <div ref={overlay} className="absolute inset-0 bg-ink/45" onClick={() => close()} style={{ visibility: "hidden" }} />
       <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="quick-view-title" style={{ visibility: "hidden" }}
-        className="relative grid max-h-[92svh] w-full overflow-y-auto bg-white md:max-w-[880px] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <button ref={closeButton} onClick={() => close()} aria-label="Close quick view" className="absolute right-2 top-2 z-10 grid size-10 place-items-center bg-white/90 transition-transform duration-500 ease-silk hover:rotate-90">
+        className="relative grid max-h-[92svh] w-full overflow-y-auto overscroll-contain rounded-t-[24px] bg-white md:max-w-[880px] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:rounded-none">
+        <span aria-hidden="true" className="absolute left-1/2 top-2 z-10 h-1 w-10 -translate-x-1/2 rounded-full bg-white/80 shadow md:hidden" />
+        <button ref={closeButton} onClick={() => close()} aria-label="Close quick view" className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-full bg-white/90 shadow-sm transition-transform duration-500 ease-silk hover:rotate-90 md:right-2 md:top-2 md:rounded-none md:shadow-none">
           <X size={17} />
         </button>
 
         {product ? (
           <>
-            <div className="cursor-motif relative aspect-[3/4] max-h-[52svh] w-full bg-cream md:max-h-none">
+            <div className="cursor-motif relative aspect-[4/5] max-h-[42svh] w-full bg-cream md:aspect-[3/4] md:max-h-none">
               {photos[photo] && <Image key={photos[photo]} src={photos[photo]} alt={product.name} fill sizes="(max-width: 768px) 100vw, 440px" unoptimized={photos[photo].startsWith("data:")} className="object-cover object-[center_20%]" />}
               {photos.length > 1 && (
                 <>
@@ -115,7 +116,7 @@ function QuickViewDialog({ productId }: { productId: string }) {
               )}
             </div>
 
-            <div className="flex flex-col p-5 sm:p-8">
+            <div className="flex flex-col px-5 pt-5 sm:px-8 sm:pt-8 md:pb-8">
               <h2 id="quick-view-title" className="pr-10 text-[16px] font-semibold uppercase tracking-[0.12em]">{product.name}</h2>
               <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-mute">{product.color} · {product.material}</p>
               <p className="mt-4 text-[14px]">
@@ -140,12 +141,15 @@ function QuickViewDialog({ productId }: { productId: string }) {
                 </div>
               </div>
 
-              <button className="btn btn-primary mt-6 h-12 w-full" disabled={soldOut || added} onClick={add}>
-                {soldOut ? "Sold out" : added ? <><Check size={15} /> Added to cart</> : chosen ? `Add to cart · ${formatPrice(product.salePrice ?? product.price)}` : "Select a size"}
-              </button>
-              <p className="mt-3 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-mute">Ships in : {SHIPS_IN}</p>
               {/* A plain anchor: the full page, not another pop-up. */}
-              <a href={productHref(product)} className="text-link mt-auto self-start pt-6">View full details</a>
+              <a href={productHref(product)} className="text-link mt-5 self-start md:order-last md:mt-auto md:pt-6">View full details</a>
+              {/* Pinned to the bottom of the sheet on phones so it is always reachable. */}
+              <div className="sticky bottom-0 -mx-5 mt-5 border-t border-line bg-white/95 px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:-mx-8 sm:px-8 md:static md:mx-0 md:mt-6 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+                <button className="btn btn-primary h-12 w-full" disabled={soldOut || added} onClick={add}>
+                  {soldOut ? "Sold out" : added ? <><Check size={15} /> Added to cart</> : chosen ? `Add to cart · ${formatPrice(product.salePrice ?? product.price)}` : "Select a size"}
+                </button>
+                <p className="mt-2 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-mute">Ships in : {SHIPS_IN}</p>
+              </div>
             </div>
           </>
         ) : (

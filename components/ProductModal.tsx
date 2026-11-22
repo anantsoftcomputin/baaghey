@@ -72,13 +72,14 @@ export function ProductModal({ slug }: { slug: string }) {
     <div className="fixed inset-0 z-[60]">
       <div ref={overlay} className="absolute inset-0 bg-ink/45 backdrop-blur-[3px]" onClick={close} style={{ visibility: "hidden" }} />
       <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="product-modal-title"
-        className="absolute inset-x-0 bottom-0 top-[5svh] overflow-y-auto overscroll-contain bg-white shadow-[0_-30px_80px_rgba(0,0,0,0.2)] lg:inset-y-0 lg:left-auto lg:right-0 lg:top-0 lg:w-[min(1240px,92vw)]">
-        <div className="sticky top-0 z-10 flex h-0 justify-end">
-          <button ref={closeButton} onClick={close} aria-label="Close product details" className="m-3 grid size-10 place-items-center bg-white/90 text-ink backdrop-blur transition-transform duration-500 ease-silk hover:rotate-90 lg:m-4">
+        className="absolute inset-x-0 bottom-0 top-[5svh] overflow-y-auto overscroll-contain rounded-t-[24px] bg-white lg:rounded-none shadow-[0_-30px_80px_rgba(0,0,0,0.2)] lg:inset-y-0 lg:left-auto lg:right-0 lg:top-0 lg:w-[min(1240px,92vw)]">
+        {/* Phones: a solid bar so the close button never covers content. Desktop: a floating button. */}
+        <div className="sticky top-0 z-10 flex h-14 items-center justify-end border-b border-line bg-white/95 backdrop-blur lg:h-0 lg:items-start lg:border-0 lg:bg-transparent lg:backdrop-blur-none">
+          <span aria-hidden="true" className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 rounded-full bg-ink/15 lg:hidden" />
+          <button ref={closeButton} onClick={close} aria-label="Close product details" className="mx-3 grid size-10 place-items-center rounded-full bg-white/90 text-ink transition-transform duration-500 ease-silk hover:rotate-90 lg:m-4 lg:rounded-none lg:backdrop-blur">
             <X size={18} />
           </button>
         </div>
-        <span className="absolute left-1/2 top-2 z-10 h-1 w-10 -translate-x-1/2 bg-white/80 lg:hidden" aria-hidden="true" />
         {product ? (
           <div className="lg:pl-6 lg:pt-6"><ProductDetail product={product} related={related} variant="modal" titleId="product-modal-title" /></div>
         ) : (

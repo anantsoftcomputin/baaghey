@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
-import { Heart, Plus } from "lucide-react";
+import { Eye, Heart } from "lucide-react";
 import type { Product } from "@/lib/products";
 import { formatPrice, productHref, productPhotos } from "@/lib/catalog";
 import { useCommerce } from "@/components/CommerceProvider";
@@ -47,22 +47,23 @@ export function ProductCard({ product, priority = false }: { product: Product; p
         </button>
         {!soldOut && (
           <>
-            {/* Desktop: a bar that rises on hover (and on keyboard focus). */}
+            {/* Mouse and trackpad: a bar that rises on hover (and on keyboard focus).
+              * Chosen by input type, not width, so tablets get the touch button. */}
             <button onClick={() => openQuickView(product.id)} aria-label={`Quick view ${product.name}`}
-              className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-white/95 py-3 text-center text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur transition-transform duration-500 ease-silk hover:bg-green hover:text-white focus-visible:translate-y-0 group-hover:translate-y-0 sm:block">
+              className="absolute inset-x-0 bottom-0 hidden translate-y-full bg-white/95 py-3 text-center text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur transition-transform duration-500 ease-silk hover:bg-green hover:text-white focus-visible:translate-y-0 group-hover:translate-y-0 [@media(hover:hover)_and_(pointer:fine)]:block">
               Quick view
             </button>
-            {/* Touch: an always-visible add button. */}
-            <button onClick={() => openQuickView(product.id)} aria-label={`Quick add ${product.name}`}
-              className="absolute bottom-2 right-2 grid size-9 place-items-center bg-white/95 text-ink shadow-sm sm:hidden">
-              <Plus size={16} />
+            {/* Touch: an always-visible, labelled quick-look pill. */}
+            <button onClick={() => openQuickView(product.id)} aria-label={`Quick look at ${product.name}`}
+              className="absolute bottom-2 left-2 inline-flex h-8 items-center gap-1.5 rounded-full bg-white/90 pl-2.5 pr-3 text-[10px] font-bold uppercase tracking-[0.12em] text-ink shadow-[0_2px_10px_rgba(0,0,0,0.15)] backdrop-blur active:scale-95 [@media(hover:hover)_and_(pointer:fine)]:hidden">
+              <Eye size={14} strokeWidth={1.8} /> Quick look
             </button>
           </>
         )}
       </div>
-      <Link href={productHref(product)} scroll={false} tabIndex={-1} className="flex items-start justify-between gap-3 pt-3">
+      <Link href={productHref(product)} scroll={false} tabIndex={-1} className="flex flex-col gap-1 pt-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <h3 className="text-[11px] font-semibold uppercase leading-snug tracking-[0.1em]">{product.name}</h3>
-        <p className="shrink-0 text-[11px] tracking-[0.06em] text-mute">
+        <p className="shrink-0 text-[12px] tracking-[0.04em] text-ink/70 sm:text-[11px] sm:text-mute">
           {product.salePrice ? <><span className="text-pink-dark">{formatPrice(product.salePrice)}</span> <span className="line-through">{formatPrice(product.price)}</span></> : price}
         </p>
       </Link>
