@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "User Agreement | BAAGAY",
+  title: "User Agreement",
   description: "The terms that govern your use of the BAAGAY website and purchases from our store.",
 };
 
@@ -38,7 +39,7 @@ export default function UserAgreementPage() {
 
       <LegalSection heading="Returns and refunds">
         <p>
-          Returns, exchanges, and refunds are governed by our <a href="/refund-policy" className="font-semibold text-green-dark underline">Refund Policy</a>, which forms part of this agreement.
+          Returns, exchanges, and refunds are governed by our <Link href="/refund-policy" className="font-semibold text-green underline">Refund Policy</Link>, which forms part of this agreement.
         </p>
       </LegalSection>
 

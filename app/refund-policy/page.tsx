@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | BAAGAY",
+  title: "Refund Policy",
   description: "BAAGAY's returns, exchanges, and refund policy for hand-tied Bandhani garments.",
 };
 
@@ -56,7 +56,7 @@ export default function RefundPolicyPage() {
 
       <LegalSection heading="Contact">
         <p>
-          For any return or refund question, email <strong>hello@baagay.in</strong> or call <strong>+91 98765 43210</strong>.
+          For any return or refund question, email <strong>hello@baagay.in</strong>.
         </p>
       </LegalSection>
     </LegalPage>

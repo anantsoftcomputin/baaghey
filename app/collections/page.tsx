@@ -1,209 +1,143 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { StoreHeader } from "@/components/StoreHeader";
-import { BottomNav } from "@/components/BottomNav";
-import { ArtBand } from "@/components/ArtBand";
 import { SiteFooter } from "@/components/SiteFooter";
-import { categoryMedia, formatPrice, productHref } from "@/lib/catalog";
-import { firebaseReady, subscribeCategories, subscribeProducts } from "@/lib/firebase";
-import {
-  bandhaniTechniques,
-  categories as seedCategories,
-  products as seedProducts,
-  type Category,
-  type Product,
-} from "@/lib/products";
+import { Reveal } from "@/components/motion/Reveal";
+import { categoryMedia, formatPrice, productHref, productPhoto } from "@/lib/catalog";
+import { bandhaniTechniques } from "@/lib/products";
+import { useCatalog } from "@/hooks/useCatalog";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export default function CollectionsPage() {
-  const [categories, setCategories] = useState<Category[]>(seedCategories);
-  const [products, setProducts] = useState<Product[]>(seedProducts);
+  const reduceMotion = useReducedMotion();
+  const { activeProducts, categories } = useCatalog();
 
-  useEffect(() => {
-    if (!firebaseReady) return;
-    const unsubscribeCategories = subscribeCategories((items) => items.length && setCategories(items));
-    const unsubscribeProducts = subscribeProducts((items) => items.length && setProducts(items));
-    return () => {
-      unsubscribeCategories();
-      unsubscribeProducts();
+  const rows = useMemo(() => [...categories].sort((a, b) => a.sortOrder - b.sortOrder).map((category) => {
+    const items = activeProducts.filter((product) => product.category === category.id);
+    const prices = items.map((product) => product.salePrice ?? product.price);
+    const cover = items.find((product) => product.featured && productPhoto(product)) ?? items.find((product) => productPhoto(product));
+    const poster = cover && productPhoto(cover);
+    return {
+      category,
+      count: items.length,
+      range: prices.length ? [Math.min(...prices), Math.max(...prices)] : null,
+      media: categoryMedia(category, poster),
+      poster,
+      subs: (category.subcategories ?? []).map((sub) => ({ sub, count: items.filter((product) => product.subcategory === sub.id).length })),
     };
-  }, []);
+  }), [categories, activeProducts]);
 
-  const activeProducts = useMemo(() => products.filter((product) => product.status === "active"), [products]);
-
-  const categoryStats = useMemo(() => {
-    return [...categories]
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((category) => {
-        const items = activeProducts.filter((product) => product.category === category.id);
-        const prices = items.map((product) => product.salePrice ?? product.price);
-        const cover = items.find((product) => product.featured && product.photo) ?? items.find((product) => product.photo);
-        const subcategoryCounts = (category.subcategories ?? []).map((sub) => ({
-          sub,
-          count: items.filter((product) => product.subcategory === sub.id).length,
-        }));
-        return {
-          category,
-          count: items.length,
-          minPrice: prices.length ? Math.min(...prices) : undefined,
-          maxPrice: prices.length ? Math.max(...prices) : undefined,
-          media: categoryMedia(category, cover?.photo),
-          subcategoryCounts,
-        };
-      });
-  }, [categories, activeProducts]);
-
-  const colourGroups = useMemo(() => {
-    const byColour = new Map<string, Product>();
+  const palette = useMemo(() => {
+    const byColour = new Map<string, { product: (typeof activeProducts)[number]; count: number }>();
     for (const product of activeProducts) {
-      if (product.photo && !byColour.has(product.color)) byColour.set(product.color, product);
+      if (!productPhoto(product)) continue;
+      const entry = byColour.get(product.color);
+      if (entry) entry.count += 1;
+      else byColour.set(product.color, { product, count: 1 });
     }
-    return Array.from(byColour.entries()).map(([colour, product]) => ({
-      colour,
-      product,
-      count: activeProducts.filter((item) => item.color === colour).length,
-    }));
+    return Array.from(byColour, ([colour, entry]) => ({ colour, ...entry }));
   }, [activeProducts]);
 
-  const techniqueExamples = useMemo(() => {
-    return bandhaniTechniques.map((technique) => ({
-      technique,
-      example: activeProducts.find((product) => technique.exampleIds.includes(product.id) && product.photo),
-    }));
-  }, [activeProducts]);
+  const glossary = useMemo(() => bandhaniTechniques.map((technique) => ({
+    technique,
+    example: activeProducts.find((product) => technique.exampleIds.includes(product.id) && productPhoto(product)),
+  })), [activeProducts]);
 
   return (
-    <main className="min-h-screen text-black">
-      <StoreHeader count={activeProducts.length} />
+    <main className="min-h-screen overflow-x-clip">
+      <StoreHeader />
 
-      <section className="container-max px-4 pb-8 pt-28 sm:px-6 lg:px-10">
-        <h1 className="text-4xl font-bold sm:text-5xl">Collections</h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-mute">
-          {activeProducts.length} hand-tied pieces across {categoryStats.length} categories — every dot pinched and dyed by hand across Kutch and Saurashtra.
-        </p>
+      <section className="container-max gutter relative pb-16 pt-[124px]">
+        <Reveal as="p" className="eyebrow text-mute">{activeProducts.length} pieces · {rows.length} silhouettes</Reveal>
+        <Reveal as="h1" variant="lines" className="page-title relative mt-4">Collections</Reveal>
+        <Reveal as="p" className="relative mt-5 max-w-lg text-[15px] leading-7 text-ink/70">Browse by silhouette, by the colour of the dye pot, or by the way each cloth was tied.</Reveal>
       </section>
 
-      <ArtBand className="h-12 sm:h-14" />
-
-      {/* Category tiles with subcategories */}
-      <section className="container-max px-4 py-12 sm:px-6 lg:px-10">
-        <div className="grid gap-6 md:grid-cols-3">
-          {categoryStats.map(({ category, count, minPrice, maxPrice, media, subcategoryCounts }) => (
-            <article key={category.id} className="flex flex-col border border-line">
-              <Link href={`/shop?category=${category.id}`} className="group relative block aspect-[4/5] overflow-hidden bg-[#f4f4f4]">
+      <section className="container-max gutter grid gap-24 pb-28 sm:gap-32">
+        {rows.map(({ category, count, range, media, poster, subs }, index) => (
+          <article key={category.id} className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+            <Link href={`/shop?category=${category.id}`} aria-label={`Shop ${category.name}`} className={`group block ${index % 2 ? "md:order-2" : ""}`}>
+              <Reveal variant="image" className="frame relative aspect-[4/5] bg-cream">
                 {media?.type === "video" ? (
-                  <video className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" src={media.src} autoPlay muted loop playsInline />
+                  <video className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-silk group-hover:scale-105" src={media.src} autoPlay={!reduceMotion} muted loop playsInline preload="metadata" poster={poster && !poster.startsWith("data:") ? poster : undefined} />
                 ) : media?.type === "photo" ? (
-                  <Image src={media.src} alt={category.name} fill sizes="(max-width: 768px) 90vw, 33vw" className="object-cover object-[center_18%] transition duration-300 group-hover:scale-[1.03]" />
+                  <Image src={media.src} alt="" fill sizes="(max-width: 768px) 90vw, 45vw" unoptimized={media.src.startsWith("data:")} className="object-cover object-[center_20%] transition-transform duration-[1.4s] ease-silk group-hover:scale-105" />
                 ) : null}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                  <h2 className="text-2xl font-bold">{category.name}</h2>
-                </div>
-              </Link>
-
-              <div className="flex flex-1 flex-col p-5">
-                <p className="text-sm leading-6 text-mute">{category.description}</p>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.06em]">
-                  <span className="border border-green/30 bg-green-light px-3 py-1.5 text-green-dark">{count} {count === 1 ? "piece" : "pieces"}</span>
-                  {minPrice !== undefined && (
-                    <span className="border border-pink/30 bg-pink-light px-3 py-1.5 text-pink-dark">
-                      {minPrice === maxPrice ? formatPrice(minPrice) : `${formatPrice(minPrice)}–${formatPrice(maxPrice!)}`}
-                    </span>
-                  )}
-                </div>
-
-                {subcategoryCounts.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {subcategoryCounts.map(({ sub, count: subCount }) => (
-                      <Link
-                        key={sub.id}
-                        href={`/shop?category=${category.id}&subcategory=${sub.id}`}
-                        className="border border-yellow/40 bg-yellow-light px-3 py-1.5 text-xs font-semibold text-yellow-dark"
-                      >
-                        {sub.name} {subCount ? `(${subCount})` : ""}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                <Link
-                  href={`/shop?category=${category.id}`}
-                  className="mt-auto inline-flex items-center gap-2 pt-5 text-xs font-bold uppercase tracking-[0.1em] text-green-dark"
-                >
-                  Shop {category.name} <ArrowRight size={15} />
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+              </Reveal>
+            </Link>
+            <div>
+              <Reveal as="p" className="text-pink-dark text-[15px] font-semibold uppercase tracking-[0.1em] text-[20px] font-light">0{index + 1}</Reveal>
+              <Reveal as="h2" variant="lines" className="mt-3 text-[22px] font-semibold uppercase tracking-[0.1em]">{category.name}</Reveal>
+              <Reveal as="p" className="mt-5 max-w-md text-[16px] leading-7 text-ink/70">{category.description}</Reveal>
+              <Reveal className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+                <span><span className="text-mute">Pieces</span> · {count}</span>
+                {range && <span><span className="text-mute">From</span> · {formatPrice(range[0])}{range[1] !== range[0] ? ` to ${formatPrice(range[1])}` : ""}</span>}
+              </Reveal>
+              {subs.length > 0 && (
+                <Reveal className="mt-6 flex flex-wrap gap-2">
+                  {subs.map(({ sub, count: subCount }) => (
+                    <Link key={sub.id} href={`/shop?category=${category.id}&subcategory=${sub.id}`} className="chip">{sub.name}{subCount ? <span className="text-mute">{subCount}</span> : null}</Link>
+                  ))}
+                </Reveal>
+              )}
+              <Reveal><Link href={`/shop?category=${category.id}`} className="btn btn-primary mt-9">Shop {category.name} <ArrowUpRight size={15} /></Link></Reveal>
+            </div>
+          </article>
+        ))}
       </section>
 
-      {/* Shop by colour */}
-      {colourGroups.length > 0 && (
-        <section className="border-t border-line px-4 py-16 sm:px-6 lg:px-10">
-          <div className="container-max">
-            <div className="mb-8 border-b border-line pb-5">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Shop by colour</p>
-              <h2 className="mt-2 text-3xl font-bold sm:text-4xl">The dye pot palette.</h2>
-            </div>
-            <div className="flex gap-6 overflow-x-auto pb-2">
-              {colourGroups.map(({ colour, product, count }) => (
-                <Link key={colour} href={productHref(product)} className="group flex shrink-0 flex-col items-center gap-3">
-                  <span className="relative block size-24 overflow-hidden rounded-full border border-line transition duration-300 group-hover:scale-105 sm:size-28">
-                    <Image src={product.photo!} alt={colour} fill sizes="112px" className="object-cover object-[center_18%]" />
+      {palette.length > 0 && (
+        <section className="bg-paper py-24">
+          <div className="container-max gutter">
+            <Reveal as="p" className="eyebrow text-mute">Shop by colour</Reveal>
+            <Reveal as="h2" variant="lines" className="mt-4 text-[22px] font-semibold uppercase tracking-[0.1em]">The dye-pot palette.</Reveal>
+          </div>
+          <div className="relative mt-12">
+          {/* Fades hint that the row scrolls sideways when it overflows. */}
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-paper to-transparent" />
+          <div className="no-scrollbar flex snap-x gap-6 overflow-x-auto px-4 pr-16 sm:gap-10 sm:px-6 sm:pr-16 lg:px-12 lg:pr-20">
+            {palette.map(({ colour, product, count }, index) => (
+              <Reveal key={colour} delay={index * 0.05} className="shrink-0 snap-start">
+                <Link href={productHref(product)} scroll={false} className="group flex flex-col items-center gap-4">
+                  <span className="relative block size-32 overflow-hidden rounded-full ring-1 ring-ink/10 transition-transform duration-700 ease-silk group-hover:-translate-y-2 sm:size-40">
+                    <Image src={productPhoto(product)!} alt="" fill sizes="160px" unoptimized={productPhoto(product)!.startsWith("data:")} className="object-cover object-[center_32%] transition-transform duration-[1.2s] ease-silk group-hover:scale-125" />
                   </span>
                   <span className="text-center">
-                    <span className="block text-xs font-bold uppercase tracking-[0.06em]">{colour}</span>
-                    <span className="block text-[11px] text-mute">{count} {count === 1 ? "piece" : "pieces"}</span>
+                    <span className="block text-[15px] font-semibold uppercase tracking-[0.1em]">{colour}</span>
+                    <span className="text-xs text-mute">{count} {count === 1 ? "piece" : "pieces"}</span>
                   </span>
                 </Link>
-              ))}
-            </div>
+              </Reveal>
+            ))}
+          </div>
           </div>
         </section>
       )}
 
-      {/* Bandhej glossary */}
-      <section className="container-max px-4 py-16 sm:px-6 lg:px-10">
-        <div className="mb-10 border-b border-line pb-6">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">The Bandhej glossary</p>
-          <h2 className="mt-2 text-3xl font-bold sm:text-4xl">The ties you&rsquo;ll find.</h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-mute">
-            Every piece in this catalog is named for the way it was actually tied. Here are the four patterns behind them.
-          </p>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {techniqueExamples.map(({ technique, example }) => (
-            <article key={technique.id} className="flex flex-col border border-line">
-              {example?.photo && (
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image src={example.photo} alt={technique.term} fill sizes="280px" className="object-cover object-[center_15%]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                  <span className="absolute bottom-2 left-3 text-lg font-bold text-white">{technique.term}</span>
-                </div>
-              )}
-              <div className="flex flex-1 flex-col p-5">
-                <h3 className="text-sm font-bold uppercase tracking-[0.08em]">{technique.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-mute">{technique.copy}</p>
-                {example && (
-                  <Link href={productHref(example)} className="mt-auto inline-flex items-center gap-1.5 pt-4 text-xs font-bold uppercase tracking-[0.08em]">
-                    See it on {example.name} <ArrowRight size={13} />
-                  </Link>
-                )}
+      <section className="container-max gutter py-28">
+        <Reveal as="p" className="eyebrow text-mute">The Bandhej glossary</Reveal>
+        <Reveal as="h2" variant="lines" className="mt-4 max-w-3xl text-[22px] font-semibold uppercase tracking-[0.1em]">Every piece is named for the way it was tied.</Reveal>
+        <div className="mt-14 grid gap-x-6 gap-y-14 sm:grid-cols-2 xl:grid-cols-4">
+          {glossary.map(({ technique, example }, index) => (
+            <Reveal key={technique.id} delay={index * 0.08}>
+              <div className="frame relative aspect-[4/5] bg-cream">
+                {example && <Image src={productPhoto(example)!} alt="" fill sizes="(max-width: 640px) 90vw, 25vw" unoptimized={productPhoto(example)!.startsWith("data:")} className="object-cover object-[center_30%]" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
+                <p className="absolute bottom-5 left-5 text-paper text-[17px] font-semibold uppercase tracking-[0.1em]">{technique.term}</p>
               </div>
-            </article>
+              <p className="eyebrow mt-5 text-ink/60">{technique.title}</p>
+              <p className="mt-3 text-[15px] leading-7 text-ink/70">{technique.copy}</p>
+              {example && <Link href={productHref(example)} scroll={false} className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em] link-underline">See it on {example.name} <ArrowUpRight size={13} /></Link>}
+            </Reveal>
           ))}
         </div>
       </section>
 
       <SiteFooter />
-
-      <BottomNav count={activeProducts.length} />
     </main>
   );
 }

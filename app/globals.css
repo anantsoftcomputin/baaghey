@@ -4,6 +4,13 @@
 
 :root {
   color-scheme: light;
+  --ink: #141414;
+  --line: #e6e6e3;
+  --green: #4e6a31;
+  --green-dark: #3a5024;
+  --pink: #f4898b;
+  --yellow: #f2e46b;
+  --silk: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -11,15 +18,20 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  font-stretch: 87.5%;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   background: #ffffff;
-  color: #000000;
+  color: var(--ink);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--green);
+  color: #ffffff;
 }
 
 button,
@@ -27,116 +39,287 @@ a,
 input,
 textarea,
 select {
-  letter-spacing: 0;
   font-family: inherit;
 }
 
 button,
 a {
   transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease,
-    opacity 160ms ease;
+    background-color 220ms var(--silk),
+    color 220ms var(--silk),
+    border-color 220ms var(--silk);
+  /* No opacity transition: GSAP owns opacity, and a CSS transition would make
+     it read a half-faded value when an entrance animation restarts. */
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
-.container-max {
-  max-width: 1440px;
-  margin-left: auto;
-  margin-right: auto;
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
 }
 
-.hairline {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+/* Scroll-reveal elements start hidden only once motion is known to be wanted
+   and JavaScript is alive (see the inline script in app/layout.tsx). */
+html.motion [data-reveal]:not([data-revealed]) {
+  opacity: 0;
 }
 
-.tag-sale {
-  color: #C25478;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+/* Home intro curtain: only shown when the inline script queued it. */
+.home-intro {
+  display: none;
+}
+html.intro .home-intro {
+  display: grid;
 }
 
-.admin-button {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #2F5D33;
-  color: #ffffff;
-  padding: 0 16px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
+@layer components {
+  .container-max {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-.admin-button.secondary {
-  background: #ffffff;
-  border: 1px solid rgba(47, 93, 51, 0.3);
-  color: #2F5D33;
-}
+  .gutter {
+    @apply px-4 sm:px-6 lg:px-12;
+  }
 
-.admin-input {
-  min-height: 44px;
-  width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  background: #ffffff;
-  padding: 10px 12px;
-  color: #000000;
-  font-size: 14px;
-  outline: none;
-}
+  /* The board's typographic voice: small, bold, widely tracked capitals. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-eyebrow;
+  }
+  .label {
+    @apply text-[12px] font-bold uppercase tracking-[0.12em];
+  }
+  /* Hovering a product photo turns the cursor into the BAAGAY Bandhani motif.
+   * Mouse and trackpad only; the SVG stays crisp on retina screens and the PNG
+   * covers browsers that won't use an SVG cursor. Hotspot is the motif's centre. */
+  @media (hover: hover) and (pointer: fine) {
+    .cursor-motif,
+    .cursor-motif * {
+      cursor: url("/cursors/motif.svg") 40 40, url("/cursors/motif.png") 40 40, pointer;
+    }
+  }
+  /* Page-level heading: one per page, clearly above the section labels. */
+  .page-title {
+    @apply text-[24px] font-semibold uppercase leading-tight tracking-[0.08em] sm:text-[30px];
+  }
+  /* Home and editorial section headings. */
+  .section-title {
+    @apply text-[16px] font-semibold uppercase tracking-[0.12em] sm:text-[18px];
+  }
+  .display {
+    @apply font-sans font-semibold uppercase leading-tight tracking-[0.08em];
+  }
 
-.admin-input:focus {
-  border-color: #2F5D33;
-}
+  .frame {
+    overflow: hidden;
+  }
 
-.admin-table {
-  width: 100%;
-  min-width: 760px;
-  border-collapse: collapse;
-  font-size: 14px;
-}
+  /* Square-cornered buttons; the fill deepens from the bottom on hover. */
+  .btn {
+    @apply relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden px-7 text-[12px] font-semibold uppercase tracking-[0.14em];
+    isolation: isolate;
+  }
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: translateY(101%);
+    transition: transform 480ms var(--silk);
+  }
+  .btn:hover:not(:disabled)::before {
+    transform: translateY(0);
+  }
+  .btn-primary {
+    @apply bg-green text-white;
+  }
+  .btn-primary::before {
+    background: var(--green-dark);
+  }
+  .btn-light {
+    @apply bg-white text-ink;
+  }
+  .btn-light::before {
+    background: var(--yellow);
+  }
+  .btn-outline {
+    @apply border border-ink text-ink;
+  }
+  .btn-outline::before {
+    background: var(--ink);
+  }
+  .btn-outline:hover:not(:disabled) {
+    @apply text-white;
+  }
 
-.admin-table th {
-  background: #fafafa;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-align: left;
-  text-transform: uppercase;
-}
+  /* "VIEW COLLECTION" style text links: a hairline that redraws on hover. */
+  .text-link {
+    @apply inline-flex items-center gap-2 pb-1 text-[12px] font-semibold uppercase tracking-[0.14em];
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+    transition: background-size 500ms var(--silk);
+  }
+  .text-link:hover {
+    animation: relink 700ms var(--silk);
+  }
+  @keyframes relink {
+    0% { background-position: 100% 100%; background-size: 100% 1px; }
+    45% { background-position: 100% 100%; background-size: 0 1px; }
+    46% { background-position: 0 100%; background-size: 0 1px; }
+    100% { background-position: 0 100%; background-size: 100% 1px; }
+  }
 
-.admin-table th,
-.admin-table td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 12px;
-  vertical-align: middle;
-}
+  .link-underline {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 420ms var(--silk);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
 
-.icon-button,
-.mini-button {
-  display: inline-grid;
-  min-width: 34px;
-  min-height: 34px;
-  place-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #ffffff;
-  color: #000000;
-  font-size: 12px;
-  font-weight: 700;
-}
+  .chip {
+    @apply inline-flex h-9 shrink-0 items-center gap-2 border border-line px-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink/75 hover:border-ink;
+  }
+  .chip[aria-pressed="true"] {
+    @apply border-ink bg-ink text-white;
+  }
 
-.icon-button.danger {
-  color: #C25478;
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ---- Forms (storefront and admin) ---- */
+  .form-field {
+    display: grid;
+    gap: 8px;
+    color: rgba(20, 20, 20, 0.6);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    min-height: 48px;
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    padding: 12px 14px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+    outline: none;
+    text-transform: none;
+    transition: border-color 200ms var(--silk);
+  }
+  .form-field textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: var(--ink);
+  }
+
+  .admin-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--green);
+    color: #ffffff;
+    padding: 0 18px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .admin-button:hover:not(:disabled) {
+    background: var(--green-dark);
+  }
+  .admin-button.secondary {
+    background: transparent;
+    border: 1px solid rgba(20, 20, 20, 0.3);
+    color: var(--ink);
+  }
+  .admin-button.secondary:hover:not(:disabled) {
+    background: var(--ink);
+    color: #ffffff;
+  }
+
+  .admin-input {
+    min-height: 44px;
+    width: 100%;
+    border: 1px solid rgba(20, 20, 20, 0.18);
+    background: #ffffff;
+    padding: 10px 12px;
+    color: var(--ink);
+    font-size: 14px;
+    outline: none;
+  }
+  .admin-input:focus {
+    border-color: var(--green);
+  }
+
+  .admin-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .admin-table th {
+    background: #fafafa;
+    color: rgba(20, 20, 20, 0.5);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  .admin-table th,
+  .admin-table td {
+    border-bottom: 1px solid rgba(20, 20, 20, 0.1);
+    padding: 12px;
+    vertical-align: middle;
+  }
+
+  .icon-button,
+  .mini-button {
+    display: inline-grid;
+    min-width: 34px;
+    min-height: 34px;
+    place-items: center;
+    border: 1px solid rgba(20, 20, 20, 0.15);
+    background: #ffffff;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .icon-button.danger {
+    color: #d45f66;
+  }
+
+  .tag-sale {
+    color: #d45f66;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hairline {
+    border: 1px solid rgba(20, 20, 20, 0.1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

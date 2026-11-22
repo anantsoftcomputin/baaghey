@@ -1,45 +1,73 @@
-# dependencies
-node_modules/
+# ─── Secrets ─────────────────────────────────────────────────────────────
+# Environment files hold Firebase Admin, Razorpay, Resend and cron secrets.
+# Only the blank template is committed.
+.env
+.env.*
+!.env.example
 
-# next.js
+# Firebase / Google service-account keys (never commit these).
+*-firebase-adminsdk-*.json
+*service-account*.json
+*serviceAccount*.json
+*credentials*.json
+gcp-key*.json
+.runtimeconfig.json
+
+# Private keys and certificates.
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Local-only overrides and tool settings.
+*.local
+.claude/settings.local.json
+
+# ─── Dependencies ────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/releases
+
+# ─── Build output ────────────────────────────────────────────────────────
 .next/
 out/
-
-# production
 build/
 dist/
+*.tsbuildinfo
+next-env.d.ts
 
-# env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ─── Test output ─────────────────────────────────────────────────────────
+coverage/
+test-results/
+playwright-report/
+blob-report/
 
-# logs
+# ─── Hosting & Firebase CLI ──────────────────────────────────────────────
+.vercel/
+.netlify/
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+database-debug.log*
+storage-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+
+# ─── Logs ────────────────────────────────────────────────────────────────
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# firebase
-.firebase/
-firebase-debug.log*
-firestore-debug.log*
-ui-debug.log*
-
-# vercel
-.vercel/
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# os/editor
+# ─── OS & editors ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+Desktop.ini
 .idea/
 .vscode/
-
-# generated/local assets
-*.local
+*.swp
+*~

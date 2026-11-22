@@ -1,0 +1,22 @@
+rules_version = '2';
+// Product photos are written only by the server (Firebase Admin, via /api/admin/uploads)
+// and served through download-token URLs. Category videos are uploaded straight
+// from the admin by accounts holding the `admin` custom claim (npm run admin:grant).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /categories/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.token.admin == true
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType.matches('(video|image)/.*');
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

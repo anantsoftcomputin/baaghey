@@ -1,22 +1,64 @@
 {
   "rules": {
     "catalog": {
-      ".read": true,
-      ".write": "auth != null"
-    },
-    "productImages": {
-      ".read": true,
-      ".write": "auth != null"
+      ".write": "auth != null && (auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      "products": {
+        ".read": true,
+        "$id": {
+          ".validate": "!newData.exists() || (newData.hasChildren(['id', 'name', 'category', 'price', 'status', 'inventory']) && newData.child('id').val() === $id && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('inventory').isNumber() && newData.child('inventory').val() >= 0)"
+        }
+      },
+      "categories": {
+        ".read": true,
+        "$id": {
+          "videoUrl": { ".validate": "newData.isString() && !newData.val().beginsWith('data:')" },
+          "coverPhoto": { ".validate": "newData.isString() && !newData.val().beginsWith('data:')" }
+        }
+      },
+      "campaigns": {
+        ".read": "auth != null && (auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
     },
     "registrations": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['uid', 'name', 'provider']) && newData.child('uid').val() === auth.uid"
+      }
+    },
+    "wishlistLeads": {
+      ".read": "auth != null && (auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".write": false
+    },
+    "newsletterSubscribers": {
+      ".read": "auth != null && (auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".write": false
+    },
+    "orders": {
+      ".indexOn": ["uid", "razorpayOrderId", "status"],
+      "$id": {
+        ".read": "auth != null && (data.child('uid').val() === auth.uid || auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && ((auth.token.admin === true || root.child('users').child(auth.uid).child('role').val() === 'admin') || (auth.uid === $uid && newData.exists() && ((!data.exists() && newData.child('role').val() === 'customer') || (data.exists() && newData.child('role').val() === data.child('role').val()))))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'name', 'email', 'phone', 'provider', 'role', 'createdAt', 'updatedAt']) && newData.child('uid').val() === $uid && (newData.child('role').val() === 'customer' || newData.child('role').val() === 'admin'))"
+      }
+    },
+    "userCarts": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid"
       }
     },
-    "wishlistLeads": {
-      ".read": "auth != null",
-      ".write": true
+    "userWishlists": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
     },
     ".read": false,
     ".write": false

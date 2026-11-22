@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | BAAGAY",
+  title: "Privacy Policy",
   description: "How BAAGAY collects, uses, and protects your personal information.",
 };
 

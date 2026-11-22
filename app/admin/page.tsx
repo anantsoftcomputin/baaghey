@@ -9,7 +9,6 @@ import {
   BadgeIndianRupee,
   Boxes,
   Edit3,
-  ImagePlus,
   PackagePlus,
   Percent,
   Plus,
@@ -17,24 +16,32 @@ import {
   Search,
   Sparkles,
   Trash2,
-  VideoIcon,
 } from "lucide-react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
+  adjustStock,
   auth,
   deleteCampaign,
   deleteCategory,
   deleteProduct,
   firebaseReady,
+  ensureUserProfile,
+  getProduct,
+  isAdminUser,
   loginWithEmail,
   loginWithGoogle,
   patchProduct,
+  saveProductDetails,
+  seedMissingCatalog,
   subscribeCampaigns,
   subscribeCategories,
   subscribeProducts,
+  subscribeOrders,
   upsertCampaign,
   upsertCategory,
   upsertProduct,
+  uploadCategoryMedia,
+  type StockLine,
 } from "@/lib/firebase";
 import {
   campaigns as seedCampaigns,
@@ -46,6 +53,7 @@ import {
   type ProductStatus,
   type Subcategory,
 } from "@/lib/products";
+import type { CommerceOrder } from "@/lib/commerce";
 
 const emptyProduct: Product = {
   id: "",
@@ -100,42 +108,62 @@ export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>(seedProducts);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
   const [campaigns, setCampaigns] = useState<Campaign[]>(seedCampaigns);
+  const [orders, setOrders] = useState<CommerceOrder[]>([]);
   const [productForm, setProductForm] = useState<Product>(emptyProduct);
+  /** Stock as it was when the product was opened for editing; saving sends
+   * only the difference, so holds placed by checkouts meanwhile survive. */
+  const [stockBaseline, setStockBaseline] = useState<StockSnapshot | null>(null);
   const [categoryForm, setCategoryForm] = useState<Category>(emptyCategory);
   const [campaignForm, setCampaignForm] = useState<Campaign>(emptyCampaign);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProductStatus | "all">("all");
-  const [activeTab, setActiveTab] = useState<"products" | "inventory" | "categories" | "campaigns">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "inventory" | "categories" | "campaigns" | "orders">("products");
   const [notice, setNotice] = useState("");
+  const [migrating, setMigrating] = useState(false);
+  const embeddedPhotoCount =
+    products.filter((product) => [product.photo, ...(product.images ?? [])].some((src) => src?.startsWith("data:"))).length +
+    categories.filter((category) => [category.videoUrl, category.coverPhoto].some((src) => src?.startsWith("data:"))).length;
+  const [categoryUpload, setCategoryUpload] = useState<"" | "videoUrl" | "coverPhoto">("");
 
   useEffect(() => {
     if (!auth) {
       setAuthChecked(true);
       return;
     }
-    return onAuthStateChanged(auth, (user) => {
-      setAdminUser(user?.email ?? user?.phoneNumber ?? user?.uid ?? null);
+    const activeAuth = auth;
+    return onAuthStateChanged(activeAuth, async (user) => {
+      if (!user) {
+        setAdminUser(null);
+        setAuthChecked(true);
+        return;
+      }
+      await ensureUserProfile(user);
+      if (await isAdminUser(user)) setAdminUser(user.email ?? user.phoneNumber ?? user.uid);
+      else {
+        setAdminUser(null);
+        setNotice("This account does not have BAAGAY admin permission.");
+        await signOut(activeAuth);
+      }
       setAuthChecked(true);
     });
   }, []);
 
   useEffect(() => {
     if (!firebaseReady) return;
-    const unsubscribeProducts = subscribeProducts((items) => {
-      if (items.length) setProducts(items);
-    });
-    const unsubscribeCategories = subscribeCategories((items) => {
-      if (items.length) setCategories(items);
-    });
-    const unsubscribeCampaigns = subscribeCampaigns((items) => {
-      if (items.length) setCampaigns(items);
-    });
+    const unsubscribeProducts = subscribeProducts(setProducts);
+    const unsubscribeCategories = subscribeCategories(setCategories);
+    const unsubscribeCampaigns = subscribeCampaigns(setCampaigns);
     return () => {
       unsubscribeProducts();
       unsubscribeCategories();
       unsubscribeCampaigns();
     };
   }, []);
+
+  useEffect(() => {
+    if (!adminUser) return;
+    return subscribeOrders(setOrders);
+  }, [adminUser]);
 
   const filteredProducts = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -174,7 +202,7 @@ export default function AdminPage() {
         setNotice("Add a product name before saving.");
         return;
       }
-      await upsertProduct({
+      const record: Product = {
         ...productForm,
         id,
         sku: productForm.sku || `BAG-${id.toUpperCase().slice(0, 14)}`,
@@ -186,11 +214,21 @@ export default function AdminPage() {
         ...(productForm.description ? { description: productForm.description } : {}),
         ...(productForm.details ? { details: productForm.details } : {}),
         ...(productForm.care ? { care: productForm.care } : {}),
-        ...(productForm.imageDataUrl ? { imageDataUrl: productForm.imageDataUrl } : {}),
-        inventory: Number(productForm.inventory),
+        inventory: stockTotal(productForm),
         lowStockAt: Number(productForm.lowStockAt),
-      });
+      };
+      const stored = await getProduct(id);
+      if (!stored) {
+        await upsertProduct(record);
+      } else {
+        await saveProductDetails(record);
+        // Without a baseline (a new form whose name matches an existing product),
+        // diff against the stock stored right now.
+        const lines = stockDeltas(stockBaseline ?? stored, record);
+        if (lines.length) await adjustStock(id, lines);
+      }
       setProductForm(emptyProduct);
+      setStockBaseline(null);
       setNotice("Product saved to Firebase.");
     } catch (error) {
       setNotice(error instanceof Error ? `Product save failed: ${error.message}` : "Product save failed.");
@@ -202,6 +240,10 @@ export default function AdminPage() {
       const id = categoryForm.id || slugify(categoryForm.name);
       if (!id || !categoryForm.name) {
         setNotice("Add a category name before saving.");
+        return;
+      }
+      if ([categoryForm.videoUrl, categoryForm.coverPhoto].some((src) => src?.startsWith("data:"))) {
+        setNotice("Embedded media can't be saved in the database. Upload the file instead, or run “Move media to Storage” first.");
         return;
       }
       await upsertCategory({
@@ -243,27 +285,59 @@ export default function AdminPage() {
 
   async function seedCatalog() {
     try {
-      await Promise.all([
-        ...seedCategories.map((category) => upsertCategory(category)),
-        ...seedProducts.map((product) => upsertProduct(product)),
-        ...seedCampaigns.map((campaign) => upsertCampaign(campaign)),
-      ]);
-      setNotice("Seed catalog pushed to Firebase.");
+      const created = await seedMissingCatalog({ products: seedProducts, categories: seedCategories, campaigns: seedCampaigns });
+      setNotice(created ? `Added ${created} missing seed record${created === 1 ? "" : "s"}. Existing products were left untouched.` : "Every seed record already exists; nothing was changed.");
     } catch (error) {
       setNotice(error instanceof Error ? `Seed failed: ${error.message}` : "Seed failed.");
     }
   }
 
-  async function handleImage(file: File | undefined) {
-    if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    productChange("imageDataUrl", dataUrl);
+  async function migrateImages() {
+    setMigrating(true);
+    try {
+      const token = await auth?.currentUser?.getIdToken();
+      const response = await fetch("/api/admin/migrate-images", { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Migration failed.");
+      setNotice(`Moved ${data.moved} photo${data.moved === 1 ? "" : "s"} to Cloud Storage.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Migration failed.");
+    } finally {
+      setMigrating(false);
+    }
   }
 
-  async function handleCategoryVideo(file: File | undefined) {
-    if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    setCategoryForm((current) => ({ ...current, videoUrl: dataUrl }));
+  async function changeOrderStatus(order: CommerceOrder, status: CommerceOrder["status"]) {
+    try {
+      if (status === "refunded") {
+        const token = await auth?.currentUser?.getIdToken();
+        const response = await fetch(`/api/admin/orders/${order.id}/refund`, { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Refund failed.");
+        setNotice("Refund submitted to Razorpay.");
+      } else {
+        const token = await auth?.currentUser?.getIdToken();
+        const response = await fetch(`/api/admin/orders/${order.id}/status`, { method: "POST", headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ status }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Order update failed.");
+        setNotice(status === "cancelled" ? "Order cancelled and its pieces returned to stock." : "Order status updated.");
+      }
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Order update failed.");
+    }
+  }
+
+  function editProduct(product: Product) {
+    setProductForm(product);
+    setStockBaseline({ inventory: product.inventory, sizeInventory: product.sizeInventory });
+  }
+
+  async function bumpStock(product: Product, delta: number, size?: string) {
+    try {
+      await adjustStock(product.id, [{ ...(size ? { size } : {}), delta }]);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Stock update failed.");
+    }
   }
 
   function addSubcategoryRow() {
@@ -336,9 +410,6 @@ export default function AdminPage() {
               Continue with Google
             </button>
             {notice && <p className="border border-line bg-white p-3 text-sm text-accent">{notice}</p>}
-            <p className="text-xs leading-5 text-mute">
-              For production, add Firebase security rules or custom claims so only approved admin accounts can write catalog data.
-            </p>
           </div>
         </section>
       </main>
@@ -383,6 +454,12 @@ export default function AdminPage() {
           </div>
         )}
         {notice && <div className="mb-6 border border-line bg-white p-4 text-sm font-semibold">{notice}</div>}
+        {embeddedPhotoCount > 0 && (
+          <div className="mb-6 flex flex-col justify-between gap-3 border border-yellow-dark/30 bg-yellow-light p-4 text-sm sm:flex-row sm:items-center">
+            <p><strong>{embeddedPhotoCount} product{embeddedPhotoCount === 1 ? "" : "s"} or categor{embeddedPhotoCount === 1 ? "y" : "ies"}</strong> still store photos or videos inside the database, which every shopper then downloads on every page. Move them to Cloud Storage once.</p>
+            <button className="admin-button shrink-0" disabled={migrating} onClick={migrateImages}>{migrating ? "Moving…" : "Move media to Storage"}</button>
+          </div>
+        )}
 
         <section className="grid gap-4 md:grid-cols-4">
           <Stat icon={<PackagePlus size={18} />} label="Active products" value={stats.active.toString()} />
@@ -391,8 +468,8 @@ export default function AdminPage() {
           <Stat icon={<Percent size={18} />} label="Live campaigns" value={stats.campaigns.toString()} />
         </section>
 
-        <nav className="mt-8 grid gap-2 border border-line bg-white p-2 text-sm font-bold uppercase tracking-[0.08em] sm:grid-cols-4">
-          {(["products", "inventory", "categories", "campaigns"] as const).map((tab) => (
+        <nav className="mt-8 grid gap-2 border border-line bg-white p-2 text-sm font-bold uppercase tracking-[0.08em] sm:grid-cols-5">
+          {(["products", "inventory", "categories", "campaigns", "orders"] as const).map((tab) => (
             <button
               key={tab}
               className={`h-11 ${activeTab === tab ? "bg-green text-white" : "bg-white text-black"}`}
@@ -409,7 +486,6 @@ export default function AdminPage() {
               form={productForm}
               categories={categories}
               onChange={productChange}
-              onImage={handleImage}
               onSave={saveProduct}
             />
             <ProductTable
@@ -419,7 +495,7 @@ export default function AdminPage() {
               statusFilter={statusFilter}
               onQuery={setQuery}
               onStatus={setStatusFilter}
-              onEdit={setProductForm}
+              onEdit={editProduct}
               onDelete={async (id) => {
                 try {
                   await deleteProduct(id);
@@ -462,13 +538,25 @@ export default function AdminPage() {
                       <td>{product.lowStockAt}</td>
                       <td>{product.inventory <= product.lowStockAt ? "Low stock" : "Healthy"}</td>
                       <td>
-                        <div className="flex gap-2">
-                          <button className="mini-button" onClick={() => patchProduct(product.id, { inventory: Math.max(0, product.inventory - 1) })}>
-                            -1
-                          </button>
-                          <button className="mini-button" onClick={() => patchProduct(product.id, { inventory: product.inventory + 1 })}>
-                            +1
-                          </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {hasSizedStock(product) ? (
+                            Object.entries(product.sizeInventory ?? {}).map(([size, count]) => (
+                              <span key={size} className="inline-flex items-center gap-1 text-xs">
+                                <span className="font-semibold">{size}:{count}</span>
+                                <button className="mini-button" aria-label={`Remove one ${size}`} disabled={count <= 0} onClick={() => bumpStock(product, -1, size)}>-1</button>
+                                <button className="mini-button" aria-label={`Add one ${size}`} onClick={() => bumpStock(product, 1, size)}>+1</button>
+                              </span>
+                            ))
+                          ) : (
+                            <>
+                              <button className="mini-button" disabled={product.inventory <= 0} onClick={() => bumpStock(product, -1)}>
+                                -1
+                              </button>
+                              <button className="mini-button" onClick={() => bumpStock(product, 1)}>
+                                +1
+                              </button>
+                            </>
+                          )}
                           <button className="mini-button" onClick={() => patchProduct(product.id, { status: product.status === "active" ? "draft" : "active" })}>
                             Toggle
                           </button>
@@ -526,14 +614,31 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <Field label="Category video URL (autoplays on the category tile instead of a photo)">
-                <input className="admin-input" placeholder="/my-category-video.mp4 or https://..." value={categoryForm.videoUrl ?? ""} onChange={(event) => setCategoryForm({ ...categoryForm, videoUrl: event.target.value })} />
-              </Field>
-              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line bg-white p-4 text-center text-sm font-semibold">
-                <VideoIcon size={20} />
-                Or upload a short video clip
-                <input className="hidden" type="file" accept="video/*" onChange={(event) => handleCategoryVideo(event.target.files?.[0])} />
-              </label>
+              {(["videoUrl", "coverPhoto"] as const).map((key) => (
+                <Field key={key} label={key === "videoUrl" ? "Category video (autoplays on the category tile instead of a photo)" : "Category cover photo (video poster and fallback)"}>
+                  <div className="flex gap-2">
+                    <input className="admin-input min-w-0 flex-1" placeholder={key === "videoUrl" ? "Upload, or paste /my-video.mp4 or https://…" : "Upload, or paste https://…"} value={categoryForm[key]?.startsWith("data:") ? "(embedded in database — move to Storage)" : categoryForm[key] ?? ""} onChange={(event) => setCategoryForm({ ...categoryForm, [key]: event.target.value })} />
+                    <label className={`admin-button secondary shrink-0 cursor-pointer ${categoryUpload ? "pointer-events-none opacity-60" : ""}`}>
+                      {categoryUpload === key ? "Uploading…" : "Upload"}
+                      <input type="file" className="sr-only" accept={key === "videoUrl" ? "video/mp4,video/webm" : "image/jpeg,image/png,image/webp"} onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        setCategoryUpload(key);
+                        try {
+                          const url = await uploadCategoryMedia(categoryForm.id || slugify(categoryForm.name), file);
+                          setCategoryForm((current) => ({ ...current, [key]: url }));
+                          setNotice("Uploaded. Save the category to publish it.");
+                        } catch (error) {
+                          setNotice(error instanceof Error ? error.message : "Upload failed.");
+                        } finally {
+                          setCategoryUpload("");
+                        }
+                      }} />
+                    </label>
+                  </div>
+                </Field>
+              ))}
               {categoryForm.videoUrl && (
                 <video className="h-40 w-full border border-line object-cover" src={categoryForm.videoUrl} muted loop autoPlay playsInline />
               )}
@@ -614,6 +719,19 @@ export default function AdminPage() {
             />
           </section>
         )}
+
+        {activeTab === "orders" && (
+          <section className="mt-6 border border-line bg-white p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-mute">Fulfilment</p>
+            <h2 className="text-3xl font-bold">Orders</h2>
+            <div className="mt-5 overflow-x-auto">
+              <table className="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
+                {orders.map((order) => <tr key={order.id}><td><strong>{order.id.slice(-8).toUpperCase()}</strong><br /><span className="text-xs text-mute">{new Date(order.createdAt).toLocaleString("en-IN")}</span></td><td>{order.customer.name}<br /><span className="text-xs text-mute">{order.customer.email}</span></td><td>₹{order.total.toLocaleString("en-IN")}</td><td>{order.razorpayPaymentId ?? "Pending"}</td><td><select className="admin-input min-w-36" value={order.status} onChange={(event) => changeOrderStatus(order, event.target.value as CommerceOrder["status"])}><option value="pending_payment">Pending payment</option><option value="payment_failed" disabled>Payment failed</option><option value="abandoned" disabled>Abandoned</option><option value="paid">Paid</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select></td></tr>)}
+              </tbody></table>
+              {!orders.length && <p className="p-6 text-sm text-mute">No orders yet.</p>}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
@@ -623,17 +741,48 @@ function ProductForm({
   form,
   categories,
   onChange,
-  onImage,
   onSave,
 }: {
   form: Product;
   categories: Category[];
   onChange: <K extends keyof Product>(key: K, value: Product[K]) => void;
-  onImage: (file: File | undefined) => void;
   onSave: () => void;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState("");
   const activeCategory = categories.find((category) => category.id === form.category);
   const subcategories: Subcategory[] = activeCategory?.subcategories ?? [];
+  const photos = form.images?.length ? form.images : form.photo ? [form.photo] : [];
+
+  async function addProductImages(files: FileList | null) {
+    if (!files?.length) return;
+    const available = 6 - photos.length;
+    if (available <= 0) {
+      setUploadNotice("A product can have up to 6 images.");
+      return;
+    }
+    setUploading(true);
+    setUploadNotice("Compressing and uploading images…");
+    try {
+      const selected = Array.from(files).slice(0, available);
+      const productId = form.id || slugify(form.name) || "unsorted";
+      const uploaded = await Promise.all(selected.map(async (file) => uploadProductImage(await compressProductImage(file), productId)));
+      const next = [...photos, ...uploaded];
+      onChange("images", next);
+      onChange("photo", next[0]);
+      setUploadNotice(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded. Save the product to publish.`);
+    } catch (error) {
+      setUploadNotice(error instanceof Error ? error.message : "Could not process the selected images.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeProductImage(index: number) {
+    const next = photos.filter((_, photoIndex) => photoIndex !== index);
+    onChange("images", next.length ? next : undefined);
+    onChange("photo", next[0]);
+  }
 
   return (
     <Panel title="Product studio" kicker="Create and edit">
@@ -687,10 +836,13 @@ function ProductForm({
         <Field label="Sale price">
           <input className="admin-input" type="number" value={form.salePrice ?? ""} onChange={(event) => onChange("salePrice", event.target.value ? Number(event.target.value) : undefined)} />
         </Field>
-        <Field label="Inventory">
-          <input className="admin-input" type="number" value={form.inventory} onChange={(event) => onChange("inventory", Number(event.target.value))} />
+        <Field label={hasSizedStock(form) ? "Inventory (sum of sizes)" : "Inventory"}>
+          <input className="admin-input" type="number" value={stockTotal(form)} disabled={hasSizedStock(form)} onChange={(event) => onChange("inventory", Number(event.target.value))} />
         </Field>
       </div>
+      <Field label="Stock by size (optional, e.g. S:3, M:5, L:2)">
+        <input className="admin-input" value={Object.entries(form.sizeInventory ?? {}).map(([size, stock]) => `${size}:${stock}`).join(", ")} onChange={(event) => onChange("sizeInventory", Object.fromEntries(event.target.value.split(",").map((item) => item.trim().split(":" )).filter(([size, stock]) => size && stock !== undefined).map(([size, stock]) => [size, Math.max(0, Number(stock) || 0)])))} />
+      </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Material">
           <input className="admin-input" value={form.material} onChange={(event) => onChange("material", event.target.value)} />
@@ -728,17 +880,68 @@ function ProductForm({
         <input type="checkbox" checked={form.featured} onChange={(event) => onChange("featured", event.target.checked)} />
         Featured on homepage
       </label>
-      <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line bg-white p-4 text-center text-sm font-semibold">
-        <ImagePlus size={20} />
-        Upload product image to Realtime Database as data URL
-        <input className="hidden" type="file" accept="image/*" onChange={(event) => onImage(event.target.files?.[0])} />
-      </label>
-      {form.imageDataUrl && <div className="h-36 bg-cover bg-center" style={{ backgroundImage: `url(${form.imageDataUrl})` }} />}
-      <button className="admin-button w-full" onClick={onSave} disabled={!firebaseReady}>
+      <Field label="Product images (up to 6, stored in Cloud Storage)">
+        <input className="admin-input" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading || photos.length >= 6} onChange={(event) => { void addProductImages(event.target.files); event.target.value = ""; }} />
+      </Field>
+      {uploadNotice && <p role="status" className="text-xs font-semibold text-mute">{uploadNotice}</p>}
+      {photos.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+          {photos.map((photo, index) => (
+            <div key={`${index}-${photo.slice(-12)}`} className="relative aspect-[4/5] overflow-hidden border border-line bg-[#f4f4f4]">
+              <Image src={photo} alt={`Product preview ${index + 1}`} fill sizes="160px" unoptimized={photo.startsWith("data:")} className="object-cover" />
+              <button type="button" className="absolute right-1 top-1 grid size-7 place-items-center bg-white/90 text-red-700" aria-label={`Remove image ${index + 1}`} onClick={() => removeProductImage(index)}><Trash2 size={14} /></button>
+              {index === 0 && <span className="absolute bottom-1 left-1 bg-green px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Cover</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      <button className="admin-button w-full" onClick={onSave} disabled={!firebaseReady || uploading}>
         <Save size={16} /> Save product
       </button>
     </Panel>
   );
+}
+
+async function uploadProductImage(image: Blob, productId: string) {
+  const token = await auth?.currentUser?.getIdToken();
+  const body = new FormData();
+  body.append("file", image);
+  body.append("productId", productId);
+  const response = await fetch("/api/admin/uploads", { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {}, body });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Upload failed.");
+  return data.url as string;
+}
+
+async function compressProductImage(file: File): Promise<Blob> {
+  if (!file.type.startsWith("image/")) throw new Error(`${file.name} is not an image.`);
+  if (file.size > 12 * 1024 * 1024) throw new Error(`${file.name} is larger than 12 MB.`);
+
+  const bitmap = await createImageBitmap(file);
+  const maxDimension = 1400;
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    throw new Error(`Could not process ${file.name}.`);
+  }
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  const encode = (quality: number) => new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error(`Could not encode ${file.name}.`))), "image/webp", quality));
+  let quality = 0.82;
+  let result = await encode(quality);
+  while (result.size > 1_100_000 && quality > 0.48) {
+    quality -= 0.08;
+    result = await encode(quality);
+  }
+  if (result.size > 3_000_000) throw new Error(`${file.name} could not be compressed enough. Choose a smaller image.`);
+  return result;
 }
 
 function ProductTable({
@@ -889,6 +1092,31 @@ function ListPanel({
   );
 }
 
+type StockSnapshot = Pick<Product, "inventory" | "sizeInventory">;
+
+function hasSizedStock(product: StockSnapshot) {
+  return Object.keys(product.sizeInventory ?? {}).length > 0;
+}
+
+/** With per-size stock the total is always the sum of the sizes. */
+function stockTotal(product: StockSnapshot) {
+  return hasSizedStock(product)
+    ? Object.values(product.sizeInventory ?? {}).reduce((sum, count) => sum + Number(count || 0), 0)
+    : Number(product.inventory) || 0;
+}
+
+/** Relative changes that turn `before` into `after`. */
+function stockDeltas(before: StockSnapshot, after: StockSnapshot): StockLine[] {
+  if (!hasSizedStock(after)) {
+    const delta = stockTotal(after) - Number(before.inventory ?? 0);
+    return delta ? [{ delta }] : [];
+  }
+  const sizes = new Set([...Object.keys(before.sizeInventory ?? {}), ...Object.keys(after.sizeInventory ?? {})]);
+  return [...sizes]
+    .map((size) => ({ size, delta: Number(after.sizeInventory?.[size] ?? 0) - Number(before.sizeInventory?.[size] ?? 0) }))
+    .filter((line) => line.delta !== 0);
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -899,13 +1127,4 @@ function slugify(value: string) {
 
 function cleanList(value: string[]) {
   return value.map((item) => item.trim()).filter(Boolean);
-}
-
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

@@ -2,184 +2,175 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
-import { categories as seedCategories, type Category } from "@/lib/products";
-import { firebaseReady, subscribeCategories } from "@/lib/firebase";
+import { categoryMedia, productPhoto } from "@/lib/catalog";
+import { CONTACT } from "@/lib/site";
+import { useCatalog } from "@/hooks/useCatalog";
+import { useCommerce } from "@/components/CommerceProvider";
+import { Wordmark } from "@/components/Wordmark";
+import { gsap, MOTION_OK, ScrollTrigger, useGSAP } from "@/lib/gsap";
 
-export function StoreHeader({ count = 0 }: { count?: number }) {
-  const [categories, setCategories] = useState<Category[]>(seedCategories);
+const LINKS = [
+  { href: "/collections", label: "Collections" },
+  { href: "/#craft", label: "Craft" },
+  { href: "/#about", label: "About Us" },
+];
+
+/** `overlay` lets the bar sit transparently over a full-bleed hero until the
+ * page scrolls. `count` is accepted for backwards compatibility. */
+export function StoreHeader({ overlay = false, count }: { overlay?: boolean; count?: number } = {}) {
+  void count;
+  const { cartCount, openAuth, openBag, user } = useCommerce();
+  const { categories, promotion, activeProducts } = useCatalog();
+  const pathname = usePathname();
+  const header = useRef<HTMLElement>(null);
+  const mega = useRef<HTMLDivElement>(null);
+  const badge = useRef<HTMLSpanElement>(null);
+  const [megaOpen, setMegaOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
-  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    if (!firebaseReady) return;
-    return subscribeCategories((items) => items.length && setCategories(items));
-  }, []);
+  const sorted = [...categories].sort((a, b) => a.sortOrder - b.sortOrder);
+  const solid = !overlay || scrolled || megaOpen;
 
-  const sortedCategories = [...categories].sort((a, b) => a.sortOrder - b.sortOrder);
+  useEffect(() => { setMenuOpen(false); setMegaOpen(false); }, [pathname]);
+  useEffect(() => { document.body.style.overflow = menuOpen ? "hidden" : ""; }, [menuOpen]);
 
-  const links = [
-    { href: "/collections", label: "Collections" },
-    { href: "/#craft", label: "Craft" },
-    { href: "/#journal", label: "Journal" },
+  useGSAP(() => {
+    const el = header.current;
+    if (!el) return;
+    // The announcement strip tucks away on scroll down; the bar stays.
+    const shift = gsap.quickTo(el, "y", { duration: 0.5, ease: "expo.out" });
+    const trigger = ScrollTrigger.create({
+      start: 0,
+      end: "max",
+      onUpdate: (self) => {
+        setScrolled(self.scroll() > 40);
+        shift(self.scroll() > 200 && self.direction === 1 ? -28 : 0);
+      },
+    });
+    return () => trigger.kill();
+  }, { scope: header });
+
+  useGSAP(() => {
+    if (!badge.current || !cartCount || !window.matchMedia(MOTION_OK).matches) return;
+    gsap.fromTo(badge.current, { scale: 1.8 }, { scale: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" });
+  }, { dependencies: [cartCount] });
+
+  useGSAP(() => {
+    if (!megaOpen || !mega.current || !window.matchMedia(MOTION_OK).matches) return;
+    gsap.fromTo(mega.current, { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.6, ease: "expo.out" });
+    gsap.from(mega.current.querySelectorAll("[data-mega]"), { y: 16, autoAlpha: 0, stagger: 0.05, duration: 0.6, delay: 0.08 });
+  }, { dependencies: [megaOpen] });
+
+  return (
+    <>
+      <header ref={header} className="fixed inset-x-0 top-0 z-50" onMouseLeave={() => setMegaOpen(false)}>
+        <div className="flex h-7 items-center justify-center bg-yellow-light px-4 text-center text-[10px] font-medium uppercase tracking-[0.16em] text-ink/80">
+          {promotion ? `${promotion.discountPercent}% off · use code ${promotion.code}` : "Free shipping in India on orders over ₹3,000"}
+        </div>
+        <div className={`transition-colors duration-500 ${solid ? "bg-green text-white shadow-[0_1px_0_rgba(0,0,0,0.06)]" : "bg-transparent text-white"}`}>
+          <div className="container-max gutter grid h-16 grid-cols-[1fr_auto_1fr] items-center">
+            <nav className="flex items-center gap-1 lg:gap-7" aria-label="Main">
+              <button aria-label="Open menu" className="-ml-2 grid size-11 place-items-center lg:hidden" onClick={() => setMenuOpen(true)}><Menu size={20} strokeWidth={1.6} /></button>
+              <Link href="/shop" onMouseEnter={() => setMegaOpen(true)} onFocus={() => setMegaOpen(true)} aria-expanded={megaOpen}
+                className="hidden items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] lg:flex">
+                Clothing <ChevronDown size={12} className={`transition-transform duration-300 ${megaOpen ? "rotate-180" : ""}`} />
+              </Link>
+              {LINKS.map((link) => (
+                <Link key={link.href} href={link.href} onMouseEnter={() => setMegaOpen(false)} className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] link-underline lg:block">{link.label}</Link>
+              ))}
+            </nav>
+
+            <Link href="/" aria-label="BAAGAY home" className="transition-transform duration-500 hover:scale-[1.04]">
+              <Wordmark tone="yellow" className="text-[30px] sm:text-[34px]" />
+            </Link>
+
+            <div className="flex items-center justify-end">
+              <Link href="/search" aria-label="Search" className="grid size-10 place-items-center"><Search size={18} strokeWidth={1.7} /></Link>
+              {user
+                ? <Link href="/account" aria-label="Your account" className="hidden size-10 place-items-center sm:grid"><UserRound size={18} strokeWidth={1.7} /></Link>
+                : <button aria-label="Sign in" className="hidden size-10 place-items-center sm:grid" onClick={openAuth}><UserRound size={18} strokeWidth={1.7} /></button>}
+              <button onClick={openBag} aria-label={`Open bag, ${cartCount} items`} className="relative grid size-10 place-items-center">
+                <ShoppingBag size={18} strokeWidth={1.7} />
+                {cartCount > 0 && <span ref={badge} className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-pink text-[9px] font-bold text-white">{cartCount > 9 ? "9+" : cartCount}</span>}
+              </button>
+            </div>
+          </div>
+
+          {megaOpen && (
+            <div ref={mega} className="hidden border-t border-white/15 bg-white text-ink lg:block">
+              <div className="container-max gutter grid grid-cols-[1fr_1fr_1fr_1fr] gap-8 py-9">
+                <div data-mega>
+                  <p className="label">Shop</p>
+                  <ul className="mt-4 grid gap-2.5 text-[13px]">
+                    <li><Link href="/shop" className="link-underline">All clothing</Link></li>
+                    {sorted.map((category) => <li key={category.id}><Link href={`/shop?category=${category.id}`} className="link-underline">{category.name}</Link></li>)}
+                    <li><Link href="/collections" className="link-underline">Collections</Link></li>
+                  </ul>
+                </div>
+                {sorted.slice(0, 3).map((category) => {
+                  const cover = activeProducts.find((product) => product.category === category.id && product.featured) ?? activeProducts.find((product) => product.category === category.id);
+                  const media = categoryMedia(category, cover && productPhoto(cover));
+                  return (
+                    <Link key={category.id} href={`/shop?category=${category.id}`} data-mega className="group block">
+                      <div className="relative aspect-[4/5] overflow-hidden bg-cream">
+                        {media?.type === "photo" && <Image src={media.src} alt="" fill sizes="20vw" unoptimized={media.src.startsWith("data:")} className="object-cover object-[center_20%] transition-transform duration-1000 ease-silk group-hover:scale-105" />}
+                        {media?.type === "video" && <video src={media.src} muted loop playsInline autoPlay className="absolute inset-0 h-full w-full object-cover" />}
+                        <span className="absolute inset-0 grid place-items-center bg-ink/10 text-[13px] font-bold uppercase tracking-[0.18em] text-white">{category.name}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {menuOpen && <MobileMenu onClose={() => setMenuOpen(false)} categories={sorted} signedIn={Boolean(user)} onAccount={openAuth} />}
+    </>
+  );
+}
+
+/** Two-column link lists, as in the mobile reference on the board. */
+function MobileMenu({ onClose, categories, signedIn, onAccount }: { onClose: () => void; categories: { id: string; name: string }[]; signedIn: boolean; onAccount: () => void }) {
+  const root = useRef<HTMLDivElement>(null);
+  useGSAP(() => {
+    if (!window.matchMedia(MOTION_OK).matches) return;
+    gsap.from(root.current, { xPercent: -100, duration: 0.7, ease: "expo.out" });
+    gsap.from("[data-menu-group]", { y: 20, autoAlpha: 0, duration: 0.7, stagger: 0.06, delay: 0.2 });
+  }, { scope: root });
+
+  const groups: { title: string; links: { href: string; label: string }[] }[] = [
+    { title: "Shop", links: [{ href: "/shop", label: "All clothing" }, ...categories.map((category) => ({ href: `/shop?category=${category.id}`, label: category.name }))] },
+    { title: "Explore", links: [{ href: "/collections", label: "Collections" }, { href: "/#craft", label: "Craft" }, { href: "/journal", label: "Journal" }, { href: "/#about", label: "Our story" }] },
+    { title: "Help", links: [{ href: "/refund-policy", label: "Shipping & returns" }, { href: "/user-agreement", label: "Terms of use" }, { href: "/privacy-policy", label: "Privacy policy" }] },
+    { title: "Connect", links: [{ href: `mailto:${CONTACT.email}`, label: "Contact us" }, ...(CONTACT.instagram ? [{ href: CONTACT.instagram, label: "Instagram" }] : []), ...(CONTACT.whatsapp ? [{ href: `https://wa.me/${CONTACT.whatsapp}`, label: "WhatsApp" }] : [])] },
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-green/20 bg-green-light">
-      <div className="flex h-9 items-center justify-center bg-green-dark px-4 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-        Free shipping over ₹3,000 · Hand-tied in Gujarat
+    <div ref={root} role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-white lg:hidden">
+      <div className="flex h-16 items-center justify-between bg-green px-4 text-white">
+        <Wordmark tone="yellow" className="text-[28px]" />
+        <button onClick={onClose} aria-label="Close menu" className="grid size-11 place-items-center"><X size={20} /></button>
       </div>
-      <div className="container-max flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
-        <button
-          aria-label="Open menu"
-          className="grid size-10 place-items-center lg:hidden"
-          onClick={() => setMenuOpen(true)}
-        >
-          <Menu size={22} />
-        </button>
-
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={40} height={40} className="size-9 rounded-full" />
-          <span className="text-xl font-bold tracking-tight">BAAGAY</span>
-        </Link>
-
-        <nav className="hidden items-center gap-8 text-sm font-semibold lg:flex">
-          <div className="relative" onMouseEnter={() => setShopOpen(true)} onMouseLeave={() => setShopOpen(false)}>
-            <Link href="/shop" className="flex items-center gap-1 py-6">
-              Shop <ChevronDown size={14} />
-            </Link>
-            {shopOpen && (
-              <div className="absolute left-1/2 top-full w-[560px] -translate-x-1/2 border border-line bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-                <div className="grid grid-cols-3 gap-6">
-                  {sortedCategories.map((category) => (
-                    <div key={category.id}>
-                      <Link href={`/shop?category=${category.id}`} className="text-sm font-bold text-green-dark">
-                        {category.name}
-                      </Link>
-                      <ul className="mt-3 grid gap-2">
-                        {(category.subcategories ?? []).map((sub) => (
-                          <li key={sub.id}>
-                            <Link
-                              href={`/shop?category=${category.id}&subcategory=${sub.id}`}
-                              className="text-sm text-mute hover:text-green-dark"
-                            >
-                              {sub.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-9 px-5 py-8">
+        {groups.map((group) => (
+          <div key={group.title} data-menu-group>
+            <p className="eyebrow text-mute">{group.title}</p>
+            <ul className="mt-4 grid gap-3 text-[14px]">
+              {group.links.map((link) => <li key={link.href}><Link href={link.href} onClick={onClose}>{link.label}</Link></li>)}
+            </ul>
           </div>
-          {links.map((link) => (
-            <Link key={link.href} href={link.href}>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-1">
-          <button aria-label="Search" className="hidden size-10 place-items-center sm:grid">
-            <Search size={19} />
-          </button>
-          <button aria-label="Account" className="grid size-10 place-items-center">
-            <UserRound size={19} />
-          </button>
-          <button aria-label="Cart" className="relative grid size-10 place-items-center">
-            <ShoppingBag size={19} />
-            {count > 0 && (
-              <span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-pink-dark text-[9px] font-bold text-white">
-                {count > 99 ? "99+" : count}
-              </span>
-            )}
-          </button>
-        </div>
+        ))}
       </div>
-
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 lg:hidden" onClick={() => setMenuOpen(false)}>
-          <aside
-            className="flex h-full w-[86vw] max-w-sm flex-col overflow-y-auto bg-white"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-line p-4">
-              <Link href="/" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
-                <Image src="/brand/baagay-logo.svg" alt="BAAGAY logo" width={36} height={36} className="size-8 rounded-full" />
-                <span className="text-lg font-bold">BAAGAY</span>
-              </Link>
-              <button aria-label="Close menu" className="grid size-9 place-items-center" onClick={() => setMenuOpen(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <nav className="flex flex-col">
-              <Link href="/shop" className="border-b border-line px-4 py-4 text-sm font-bold" onClick={() => setMenuOpen(false)}>
-                Shop all
-              </Link>
-              {sortedCategories.map((category) => (
-                <div key={category.id} className="border-b border-line">
-                  <button
-                    className="flex w-full items-center justify-between px-4 py-4 text-sm font-bold"
-                    onClick={() => setOpenAccordion(openAccordion === category.id ? null : category.id)}
-                  >
-                    {category.name}
-                    {(category.subcategories?.length ?? 0) > 0 && (
-                      <ChevronDown
-                        size={16}
-                        className={`transition-transform ${openAccordion === category.id ? "rotate-180" : ""}`}
-                      />
-                    )}
-                  </button>
-                  {openAccordion === category.id && (
-                    <ul className="grid gap-1 bg-green-light/60 px-4 pb-4">
-                      <li>
-                        <Link
-                          href={`/shop?category=${category.id}`}
-                          className="block py-2 text-sm text-green-dark"
-                          onClick={() => setMenuOpen(false)}
-                        >
-                          All {category.name}
-                        </Link>
-                      </li>
-                      {(category.subcategories ?? []).map((sub) => (
-                        <li key={sub.id}>
-                          <Link
-                            href={`/shop?category=${category.id}&subcategory=${sub.id}`}
-                            className="block py-2 text-sm text-mute"
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {sub.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="border-b border-line px-4 py-4 text-sm font-bold"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="mt-auto">
-              <p className="bg-cream px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-green-dark">
-                Tied with Tradition. Crafted with Love.
-              </p>
-              <div aria-hidden className="h-24 w-full bg-[url('/brand/baagay-artwork.jpg')] bg-cover bg-center" />
-            </div>
-          </aside>
-        </div>
-      )}
-    </header>
+      <div className="mt-auto grid grid-cols-2 gap-2 border-t border-line p-5">
+        <Link href="/wishlist" onClick={onClose} className="btn btn-outline h-11">Wishlist</Link>
+        {signedIn ? <Link href="/account" onClick={onClose} className="btn btn-primary h-11">Account</Link> : <button onClick={() => { onClose(); onAccount(); }} className="btn btn-primary h-11">Sign in</button>}
+      </div>
+    </div>
   );
 }

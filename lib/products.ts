@@ -16,13 +16,17 @@ export type Product = {
   inventory: number;
   lowStockAt: number;
   sizes: string[];
+  sizeInventory?: Record<string, number>;
   tags: string[];
   image: string;
   photo?: string;
-  imageDataUrl?: string;
+  /** Product photos stored as compressed data URLs in Firebase Realtime Database. */
+  images?: string[];
   description?: string;
   details?: string;
   care?: string;
+  createdAt?: number;
+  updatedAt?: number;
 };
 
 export type Subcategory = {

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StoreHeader } from "@/components/StoreHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BottomNav } from "@/components/BottomNav";
+import { PageIntro } from "@/components/PageIntro";
 
 export function LegalPage({
   title,
@@ -15,27 +15,22 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <main className="min-h-screen text-black">
+    <main className="min-h-screen">
       <StoreHeader />
-      <section className="container-max px-4 pb-16 pt-28 sm:px-6 lg:px-10">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl font-bold sm:text-5xl">{title}</h1>
-          <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-green-dark">Last updated: {updated}</p>
-          <p className="mt-5 text-base leading-7 text-mute">{intro}</p>
-          <div className="mt-4">{children}</div>
-        </div>
+      <section className="container-max gutter pb-24 pt-[124px]">
+        <PageIntro eyebrow={`Last updated ${updated}`} title={title}>{intro}</PageIntro>
+        <div className="mt-8 max-w-3xl">{children}</div>
       </section>
       <SiteFooter />
-      <BottomNav />
     </main>
   );
 }
 
 export function LegalSection({ heading, children }: { heading: string; children: ReactNode }) {
   return (
-    <section className="mt-8 border-t border-line pt-6">
-      <h2 className="text-xl font-bold">{heading}</h2>
-      <div className="mt-3 grid gap-3 text-sm leading-7 text-mute [&_strong]:text-black">{children}</div>
+    <section className="mt-10 border-t border-ink/10 pt-8">
+      <h2 className="text-[15px] font-semibold uppercase tracking-[0.1em]">{heading}</h2>
+      <div className="mt-4 grid gap-3 text-[15px] leading-7 text-ink/70 [&_strong]:text-ink">{children}</div>
     </section>
   );
 }

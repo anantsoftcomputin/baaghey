@@ -21,7 +21,12 @@ export function formatPrice(price: number) {
 }
 
 export function productPhoto(product: Product) {
-  return product.photo || product.imageDataUrl;
+  return product.images?.[0] ?? product.photo;
+}
+
+export function productPhotos(product: Product) {
+  if (product.images?.length) return product.images;
+  return product.photo ? [product.photo] : [];
 }
 
 export function hasPhoto(product: Product) {
